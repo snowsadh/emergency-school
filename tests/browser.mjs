@@ -12,6 +12,7 @@ const context = await browser.newContext({
   viewport: { width: 1440, height: 1050 },
   reducedMotion: "reduce",
   acceptDownloads: true,
+  serviceWorkers: "block",
 });
 const page = await context.newPage();
 const errors = [];
@@ -80,6 +81,22 @@ async function respond(text) {
 }
 
 try {
+  // Keep this suite offline even when the local server has real provider keys.
+  // Block every other API route so a regression cannot reach a paid endpoint.
+  await context.route("**/api/**", async (route) => {
+    if (new URL(route.request().url()).pathname === "/api/status") {
+      await route.fulfill({
+        json: {
+          openaiConfigured: false,
+          fishConfigured: false,
+          voiceConfigured: false,
+          audioStored: false,
+        },
+      });
+    } else {
+      await route.abort("blockedbyclient");
+    }
+  });
   await page.goto(base);
   await page
     .getByRole("button", { name: "Start call", exact: true })
