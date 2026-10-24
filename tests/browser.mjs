@@ -104,7 +104,23 @@ try {
   await page.waitForFunction(
     () => !document.querySelector(".start-call")?.disabled,
   );
-  assert.match(await page.locator("h1").textContent(), /Call practice/);
+  assert.match(
+    await page.locator("h1").textContent(),
+    /Emergency call-taker training/,
+  );
+  assert.match(
+    await page.locator(".practice-intro").textContent(),
+    /112 operator.*AI caller.*scored review/s,
+  );
+  assert.match(
+    await page.locator(".practice-review").textContent(),
+    /evidence behind.*scored checkpoint/s,
+  );
+  assert.equal(
+    await page.locator(".recent-sessions").count(),
+    0,
+    "First visitors need product context, not an empty journal.",
+  );
   assert.equal(
     (await page.locator(".line-label").textContent()).trim(),
     "Browser call",
@@ -125,6 +141,27 @@ try {
   );
   await noOverflow();
   await page.screenshot({ path: "artifacts/home-desktop.png", fullPage: true });
+  await page.setViewportSize({ width: 375, height: 850 });
+  await noOverflow();
+  const startBounds = await page.locator(".start-call").boundingBox();
+  assert.ok(
+    startBounds.y + startBounds.height <= 850,
+    "Starting the call must remain within the first mobile viewport.",
+  );
+  await page.screenshot({
+    path: "artifacts/home-first-visit-mobile.png",
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 1440, height: 1050 });
+  await page
+    .getByRole("button", { name: "View example review", exact: true })
+    .click();
+  await page.locator(".assessment-score").waitFor();
+  assert.match(
+    await page.locator(".report-example-notice").textContent(),
+    /Authored example/,
+  );
+  await clickNav("Practice room");
 
   await startSample();
   assert.equal(

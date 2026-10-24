@@ -30,6 +30,16 @@ Last updated: 24 October 2026.
 
 ## Work completed / decisions changed
 
+### First-visit homepage context — complete
+
+Founder feedback: the homepage does not explain the product quickly enough, but slogans and fragmented AI-style copy are not acceptable. The audience is emergency call-taker trainees; the page's job is to explain the operator/caller roles and the resulting assessment without adding onboarding.
+
+Design plan: retain the established Onest display/body typography, IBM Plex Mono utility labels, warm background `#fbfaf9`, white surfaces `#ffffff`, ink `#1d1d1c`, muted text `#77716c`, and borders `#e8e5e2`. Use a literal product heading and a short explanation of the call/review flow above the existing start surface. Replace the first visitor's empty history placeholder with a compact, concrete assessment explanation and working example-report link; keep actual history for returning visitors. No new hero artwork, metrics, decorative steps, or marketing feature cards. Verify content, one-click entry, example navigation, and desktop/mobile layouts before a checkpoint commit. No provider requests are needed.
+
+Implemented: the heading now names emergency call-taker training; the opening paragraph explains that the user is the 112 operator, the AI plays a responsive caller, and the completed call produces a transcript-referenced assessment. The call panel explains generated, unbriefed incidents. An "After the call" section names location, immediate danger, and follow-up review, with a working example-review button. Empty history is hidden until an actual session exists; no first-visit gate or onboarding state was added. Kept the current typography and controls, removed obsolete empty-state styles, and adjusted mobile heading wrapping/section spacing.
+
+Verification: **35/35 tests**, `npm run test:browser`, `npm run build`, and diff checks passed. New browser assertions verify the first-visit explanation, hidden empty history, example-report navigation, and Start call remaining inside the 375×850 mobile viewport. Existing random/guided flows, optional preferences, recorded-audio submission, exports, notes/history, and 375/390/768/1440px layouts still pass. Desktop and first-visit mobile screenshots inspected. No API, prompt, call lifecycle, rubric, or storage behavior changed; no paid provider calls were made.
+
 ### Voice turn recovery, expressive callers, and scored assessment — complete
 
 Founder reported that voice practice stays on "Listening" and caller delivery sounds flat; they also requested a serious scored report rather than overview-only feedback or generic trait ratings.

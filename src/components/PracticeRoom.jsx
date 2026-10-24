@@ -45,8 +45,14 @@ export default function PracticeRoom({
   return (
     <div className="practice-page">
       <header className="practice-intro">
-        <h1>Call practice</h1>
-        <p>Take a call. Review your response when it ends.</p>
+        <h1>
+          Emergency <span>call-taker</span> training
+        </h1>
+        <p>
+          You act as the 112 operator. An AI caller describes an emergency and
+          responds to your questions. When the call ends, get a scored review of
+          your decisions, with references to the conversation.
+        </p>
       </header>
 
       <section
@@ -54,7 +60,7 @@ export default function PracticeRoom({
         aria-label="Start an emergency training call"
       >
         <div className="console-topline">
-          <span>New session</span>
+          <span>Your next call</span>
           <span className="session-mode">
             {guided ? "Guided practice" : "Random call"}
           </span>
@@ -77,7 +83,7 @@ export default function PracticeRoom({
                 ? "Generating the incident and caller."
                 : guided
                   ? "A scenario briefing and question prompts will be available during the call."
-                  : "The incident and caller are revealed through the conversation. No briefing, no prepared script."}
+                  : "A new incident is generated for each call. Find out what happened by talking to the caller, without a scenario briefing."}
             </p>
             <div
               className="session-scope"
@@ -234,15 +240,36 @@ export default function PracticeRoom({
         )}
       </section>
 
-      <section className="recent-sessions" aria-labelledby="recent-title">
-        <div className="recent-heading">
-          <h2 id="recent-title">Recent sessions</h2>
-          <button className="text-button" onClick={onHistory}>
-            View all
-            <ArrowRight size={14} />
-          </button>
+      <section
+        className="practice-review"
+        aria-labelledby="practice-review-title"
+      >
+        <div>
+          <h2 id="practice-review-title">After the call</h2>
+          <p>
+            Review how you established the location, checked for immediate
+            danger, and followed up on missing details. See the evidence behind
+            each scored checkpoint, not just an overall mark.
+          </p>
         </div>
-        {latest ? (
+        <button
+          className="button secondary"
+          onClick={() => onOpen(exampleSession)}
+        >
+          View example review
+          <ArrowUpRight size={15} />
+        </button>
+      </section>
+
+      {latest && (
+        <section className="recent-sessions" aria-labelledby="recent-title">
+          <div className="recent-heading">
+            <h2 id="recent-title">Recent sessions</h2>
+            <button className="text-button" onClick={onHistory}>
+              View all
+              <ArrowRight size={14} />
+            </button>
+          </div>
           <button className="recent-session" onClick={() => onOpen(latest)}>
             <div>
               <strong>{latest.scenario?.title || "Practice session"}</strong>
@@ -258,22 +285,8 @@ export default function PracticeRoom({
             <time>{formatTime(latest.duration)}</time>
             <ArrowUpRight size={16} />
           </button>
-        ) : (
-          <div className="recent-empty">
-            <p>No completed calls yet.</p>
-            <span>
-              Your transcript and debrief will appear here after a session.
-            </span>
-          </div>
-        )}
-      </section>
-      <div className="example-link-row">
-        <span>Want to see the report format?</span>
-        <button className="text-button" onClick={() => onOpen(exampleSession)}>
-          Example debrief
-          <ArrowUpRight size={13} />
-        </button>
-      </div>
+        </section>
+      )}
     </div>
   );
 }
