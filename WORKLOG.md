@@ -77,6 +77,8 @@ The first complete local prototype is implemented. Desktop and mobile screenshot
 
 ## Next handoff / remaining live validation
 
+Latest connection check: the running server reports both OpenAI and Fish unconfigured. Neither key was present in the process environment, and `.env` did not exist. Created a blank, Git-ignored `.env` for local credential entry. Live verification is waiting for these two keys; no provider calls have been made and no live pass is claimed.
+
 The development app is available at `http://127.0.0.1:5173`. Add `OPENAI_API_KEY` and `FISH_API_KEY` to the ignored `.env` file, restart, and test a short English call before Hindi and more difficult callers. Check recognition fidelity, factual consistency, emotional delivery, latency, and how the debrief handles ambiguous or short calls. API keys belong only in `.env`, never in this log or client code.
 
 Known first-version limits: microphone capture pauses while the caller speaks (no natural interruptions yet); turn boundaries use a simple silence threshold; active server sessions are in-memory; feedback is generated for reflection rather than validated grading. Public deployment and a final scoring rubric are outside this checkpoint.
