@@ -30,7 +30,8 @@ const scenario = {
     callback: "SIMULATED CALLBACK",
     unknowns: "Source of smoke",
   },
-  opening: "[nervous, speaking quickly] There is smoke near the market.",
+  opening:
+    "[frightened, quick uneven phrases, voice trembling] There is <emphasis>smoke</emphasis> near the market. [short, shaky inhale]",
 };
 
 async function withServer(options, run) {
@@ -117,8 +118,82 @@ test("OpenAI SDK receives structured, non-stored requests and rejects scope drif
   );
 });
 
+test("opening and reply prompts share actor direction, intensity examples, and emotional continuity", async () => {
+  const requests = [];
+  const dialogue =
+    "[still frightened, slightly steadier after a slow exhale] At the market. [brief pause] <slow>Gate B.</slow>";
+  const intelligence = createIntelligence(
+    {},
+    {
+      responses: {
+        parse: async (request) => {
+          requests.push(request);
+          return {
+            status: "completed",
+            output_parsed:
+              request.text.format.name === "training_scenario"
+                ? structuredClone(scenario)
+                : { dialogue, endCall: false },
+          };
+        },
+      },
+    },
+  );
+  const generated = await intelligence.generate(validateSetup({}));
+  const reply = await intelligence.reply({
+    scenario: generated,
+    transcript: [
+      {
+        role: "agent",
+        text: plainDialogue(generated.opening),
+        dialogue: generated.opening,
+      },
+      { role: "user", text: "I am listening. Which gate are you near?" },
+    ],
+  });
+  for (const request of requests) {
+    assert.equal(request.model, "gpt-4.1");
+    assert.match(request.instructions, /Brief a voice actor/);
+    assert.match(request.instructions, /emotion and intensity/);
+    assert.match(
+      request.instructions,
+      /pacing, breath, vocal tension, or phrase breaks/,
+    );
+    assert.match(request.instructions, /do not force every caller to panic/);
+    for (const level of [
+      "Low panic",
+      "Moderate panic",
+      "High panic",
+      "Gradual settling",
+    ])
+      assert.ok(request.instructions.includes(`${level} example`));
+    for (const tag of [
+      "whisper",
+      "emphasis",
+      "soft",
+      "fast",
+      "slow",
+      "stress",
+      "forceful",
+    ])
+      assert.ok(request.instructions.includes(`<${tag}>...</${tag}>`));
+    assert.match(request.instructions, /over several exchanges/);
+    assert.match(request.instructions, /NEVER copy their incident facts/);
+  }
+  assert.match(requests[1].instructions, /facts are immutable/);
+  assert.match(
+    requests[1].instructions,
+    /Never claim real help was dispatched/,
+  );
+  assert.equal(requests[1].input[0].content, scenario.opening);
+  assert.equal(reply.dialogue, dialogue);
+  assert.equal(plainDialogue(reply.dialogue), "At the market. Gate B.");
+});
+
 test("a complete voice call: no onboarding, hidden facts, tagged Fish speech, authoritative transcript, idempotent debrief", async () => {
   const spoken = [];
+  const taggedReply =
+    "[still frightened, slower with a trembling voice] At the market, <stress>Gate B.</stress> [brief pause]";
   let reviews = 0;
   const intelligence = {
     generate: async (scope) => {
@@ -129,7 +204,7 @@ test("a complete voice call: no onboarding, hidden facts, tagged Fish speech, au
     reply: async (session) => {
       assert.equal(session.scenario.facts.location, "Fictional Market Gate B");
       return {
-        dialogue: "[trying to focus] At the market, Gate B.",
+        dialogue: taggedReply,
         endCall: false,
       };
     },
@@ -175,6 +250,7 @@ test("a complete voice call: no onboarding, hidden facts, tagged Fish speech, au
       assert.equal(start.body.briefing, null);
       assert.equal(start.body.scenario, undefined);
       assert.equal(start.body.caller.text, "There is smoke near the market.");
+      assert.equal(start.body.caller.dialogue, scenario.opening);
       assert.equal(spoken[0].text, scenario.opening);
       assert.ok(start.body.audio);
       const id = start.body.id;
@@ -184,7 +260,8 @@ test("a complete voice call: no onboarding, hidden facts, tagged Fish speech, au
       assert.equal(reply.status, 200);
       assert.equal(reply.body.user.role, "user");
       assert.equal(reply.body.caller.text, "At the market, Gate B.");
-      assert.ok(spoken[1].text.startsWith("[trying to focus]"));
+      assert.equal(reply.body.caller.dialogue, taggedReply);
+      assert.equal(spoken[1].text, taggedReply);
       const end = await post(`/api/sessions/${id}/end`, {
         playedCallerIds: [start.body.caller.segmentId],
       });
@@ -192,6 +269,8 @@ test("a complete voice call: no onboarding, hidden facts, tagged Fish speech, au
       assert.equal(end.body.transcript.length, 3);
       assert.equal(end.body.transcript[0].playbackConfirmed, true);
       assert.equal(end.body.transcript[2].playbackConfirmed, false);
+      assert.equal(end.body.transcript[2].dialogue, taggedReply);
+      assert.equal(end.body.transcript[2].text, "At the market, Gate B.");
       assert.equal(end.body.scenario.title, scenario.title);
       assert.ok(end.body.review);
       assert.equal((await post(`/api/sessions/${id}/end`, {})).status, 200);
