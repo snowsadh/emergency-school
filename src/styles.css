@@ -327,40 +327,6 @@ textarea::placeholder {
 .main-shell {
   min-width: 0;
 }
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  height: 65px;
-  padding: 0 40px;
-  border-bottom: 1px solid var(--border);
-}
-.topbar-title {
-  font-size: 13px;
-  font-weight: 450;
-}
-.voice-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  min-height: 34px;
-  padding: 7px 10px;
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  background: transparent;
-  color: var(--muted);
-  font-size: 11px;
-}
-.voice-status > span {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #b6aba2;
-}
-.voice-status.connected > span {
-  background: #6e9676;
-}
 .page-content {
   max-width: 1160px;
   padding: 48px 64px 32px;
@@ -1196,10 +1162,6 @@ textarea::placeholder {
   .page-content {
     padding: 38px 38px 28px;
   }
-  .topbar {
-    padding-right: 30px;
-    padding-left: 30px;
-  }
   .session-brief {
     padding: 31px 27px;
   }
@@ -1325,20 +1287,6 @@ textarea::placeholder {
   }
   .sidebar-bottom {
     display: none;
-  }
-  .topbar {
-    height: 49px;
-    padding: 0 22px;
-    border: 0;
-  }
-  .topbar-title {
-    font-size: 11px;
-    color: var(--muted);
-  }
-  .voice-status {
-    padding: 5px 8px;
-    min-height: 29px;
-    font-size: 9px;
   }
   .page-content {
     padding: 24px 22px 26px;

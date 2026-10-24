@@ -30,6 +30,12 @@ Last updated: 24 October 2026.
 
 ## Work completed / decisions changed
 
+### Call-screen copy and header cleanup — complete
+
+Founder feedback: "Simulated line" makes the working call experience feel like a fake/demo. Replace that label with "Browser call" and make the introduction direct. Remove the redundant page-title / "Voice ready" top bar; credential presence is not an audio-health check. Preserve the existing Onest typography, warm neutral palette, session layout, real provider behavior, and explicit training disclaimer in the footer. This is a focused copy and layout correction, not a new visual direction.
+
+Updated the shared shell and practice screen, deleted the unused desktop/mobile header styles, and added browser assertions for "Browser call", the removed top bar, and the retained training disclaimer. `npm test` (**14/14**), `npm run test:browser`, `npm run build`, and `git diff --check` all passed. Inspected the updated 1440px desktop and 375px mobile home screenshots; responsive checks also passed at 390px and 768px. The real-browser voice flow was checked with mocked providers; no paid provider calls were made for this UI change. No API, model prompt, microphone, or report behavior changed.
+
 ### UI revision — Fish Audio inspiration (implemented, pending founder review)
 
 The founder rejected the first UI's pulse branding, marketing slogans, and generic voice-AI styling. Inspected the actual Fish Audio public site and app in Chrome, including computed typography: Onest, warm neutral backgrounds, compact navigation, white tool surfaces, and near-black pill buttons. Reference screenshots are kept in ignored `artifacts/`, not committed as product assets.

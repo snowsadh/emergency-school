@@ -106,6 +106,19 @@ try {
   );
   assert.match(await page.locator("h1").textContent(), /Call practice/);
   assert.equal(
+    (await page.locator(".line-label").textContent()).trim(),
+    "Browser call",
+  );
+  assert.equal(
+    await page.locator(".topbar, .voice-status").count(),
+    0,
+    "Do not repeat the page title or imply audio health from configured keys.",
+  );
+  assert.match(
+    await page.locator(".page-footer").textContent(),
+    /Training only/,
+  );
+  assert.equal(
     await page.getByRole("combobox").count(),
     0,
     "No required preferences on entry.",

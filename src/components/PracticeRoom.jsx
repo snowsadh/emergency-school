@@ -46,9 +46,7 @@ export default function PracticeRoom({
     <div className="practice-page">
       <header className="practice-intro">
         <h1>Call practice</h1>
-        <p>
-          Take a simulated emergency call. Review your response when it ends.
-        </p>
+        <p>Take a call. Review your response when it ends.</p>
       </header>
 
       <section
@@ -65,7 +63,7 @@ export default function PracticeRoom({
           <div className="session-brief">
             <div className="line-label">
               <span />
-              SIMULATED LINE
+              Browser call
             </div>
             <h2>
               {connecting

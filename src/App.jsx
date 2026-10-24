@@ -191,29 +191,6 @@ export default function App() {
         </div>
       </aside>
       <div className="main-shell">
-        <header className="topbar">
-          <span className="topbar-title">
-            {screen === "call"
-              ? "Current call"
-              : screen === "report"
-                ? "Session debrief"
-                : navigation.find((n) => n.id === screen)?.label}
-          </span>
-          <button
-            className={`voice-status ${status?.voiceConfigured ? "connected" : ""}`}
-            onClick={() => setModal("setup")}
-            disabled={locked}
-          >
-            <span />
-            {!status
-              ? "Checking connection"
-              : status.voiceConfigured
-                ? "Voice ready"
-                : status.openaiConfigured
-                  ? "Text practice ready"
-                  : "Preview mode"}
-          </button>
-        </header>
         <main id="main-content" className="page-content">
           {practice.error && (
             <div className="error-banner" role="alert">
