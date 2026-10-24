@@ -20,11 +20,11 @@ Last updated: 24 October 2026.
 - [x] Make scope validation accept an entirely empty setup; make random the default.
 - [x] Add OpenAI scenario, caller-turn, transcription, and review code using structured responses.
 - [x] Replace the first Fish-hosted-agent backend with the requested OpenAI → Fish speech loop.
-- [ ] Build the one-click home screen and optional customization panel.
-- [ ] Implement browser audio capture, caller playback, microphone controls, and a transparent sample rehearsal.
-- [ ] Finish the evidence-led report, local session history, and reflection notes.
-- [ ] Apply and review desktop/mobile styling and keyboard accessibility.
-- [ ] Add runnable backend and browser checks; run tests and a production build.
+- [x] Build the one-click home screen and optional customization panel.
+- [x] Implement browser audio capture, caller playback, microphone controls, and a transparent sample rehearsal.
+- [x] Finish the evidence-led report, local session history, and reflection notes.
+- [x] Apply and review desktop/mobile styling and keyboard accessibility.
+- [x] Add runnable backend and browser checks; run tests and a production build.
 - [ ] Update setup instructions and reconcile earlier research with the final scope.
 
 ## Work completed / decisions changed
@@ -39,13 +39,15 @@ Random now has product priority, and every practice preference is optional. The 
 
 ### Current build state
 
-The backend replacement is implemented. The interface is being revised and has not yet been styled or browser-tested. No production build has passed yet.
+The first complete local prototype is implemented. Desktop and mobile screenshots have been inspected; the automated sample flow and production build pass. Final source cleanup and setup documentation are being completed. No live provider request has been made.
 
 ## Verified checkpoints
 
 1. `f2a8792` — Preserve existing hackathon/product research and establish this build log.
 2. `2d6f342` — Backend checkpoint: **4/4 tests passed**. Includes empty-scope defaults, structured OpenAI requests, a mocked complete voice call, Fish performance-tag forwarding, hidden scenario facts, playback acknowledgement, idempotent call ending, and explicit failure paths. Syntax checks passed. Providers are mocked; this does not establish live model or audio quality.
-3. Independent lifecycle review: backend regressions and browser-audio unit checks added. Checked end-during-reply, overlapping turns, failed speech generation, failed model reply, microphone cleanup, mute/unmute while thinking, and stale playback. Fixed the pending-reply microphone race and stale audio playback checks. Rechecked difficulty prompt wording and clarified that microphone audio is temporarily captured, but not stored by the app.
+3. `9b08da9` — Independent lifecycle review: backend regressions and browser-audio unit checks added. **12/12 tests passed.** Checked end-during-reply, overlapping turns, failed speech generation, failed model reply, microphone cleanup, mute/unmute while thinking, and stale playback. Fixed the pending-reply microphone race and stale audio playback checks. Rechecked difficulty prompt wording and clarified that microphone audio is temporarily captured, but not stored by the app.
+4. Debrief checkpoint: evidence-linked feedback, original-transcript quotes, complete report export, reflection notes, real local history, and activity-only progress. Authored examples are separate from user activity; scripted samples receive no fabricated grading. Automated checks now pass **14/14**.
+5. Integrated browser check: `npm run test:browser` passed zero-onboarding random practice, optional guided/Hindi choices, two sample calls, report evidence navigation, note persistence, export contents, reload persistence, and layouts at 375/390/768/1440px. The offline sample made **zero** `/api/sessions` requests. `npm run build` passed. Live provider output/voice quality remains unverified.
 
 ## Verification and external dependencies
 
