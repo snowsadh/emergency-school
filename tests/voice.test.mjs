@@ -1,19 +1,26 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createVoice } from "../src/voice.mjs";
+import { createTurnDetector, createVoice } from "../src/voice.mjs";
 
-async function withBrowser(run, decode = async () => new ArrayBuffer(8)) {
+async function withBrowser(
+  run,
+  decode = async () => new ArrayBuffer(8),
+  options = {},
+) {
+  const trackEvents = new Map();
   const track = {
     enabled: true,
     stops: 0,
     stop() {
       this.stops++;
     },
+    addEventListener: (name, callback) => trackEvents.set(name, callback),
   };
   const stream = { getTracks: () => [track], getAudioTracks: () => [track] };
   const recorders = [];
   const players = [];
   const contexts = [];
+  const contextEvents = new Map();
   const intervals = new Map();
   let microphoneRequests = 0;
   let intervalId = 0;
@@ -27,10 +34,14 @@ async function withBrowser(run, decode = async () => new ArrayBuffer(8)) {
       recorders.push(this);
     }
     start() {
+      if (options.failStart) throw new Error("Recording failed");
       this.state = "recording";
     }
     stop() {
       this.state = "inactive";
+      this.ondataavailable?.({
+        data: new Blob(["synthetic microphone bytes".repeat(8)]),
+      });
       this.onstop?.();
     }
   }
@@ -43,6 +54,9 @@ async function withBrowser(run, decode = async () => new ArrayBuffer(8)) {
     async resume() {
       if (this.state === "closed") throw new Error("Context closed");
       this.state = "running";
+    }
+    addEventListener(name, callback) {
+      contextEvents.set(name, callback);
     }
     createAnalyser() {
       return { fftSize: 1024, getFloatTimeDomainData: (data) => data.fill(0) };
@@ -90,6 +104,14 @@ async function withBrowser(run, decode = async () => new ArrayBuffer(8)) {
     window: { MediaRecorder: Recorder },
     MediaRecorder: Recorder,
     AudioContext: Context,
+    FileReader: class {
+      readAsDataURL() {
+        queueMicrotask(() => {
+          this.result = `data:audio/webm;base64,${Buffer.from("synthetic voice").toString("base64")}`;
+          this.onload?.();
+        });
+      }
+    },
     setInterval: (callback) => {
       const id = ++intervalId;
       intervals.set(id, callback);
@@ -111,10 +133,11 @@ async function withBrowser(run, decode = async () => new ArrayBuffer(8)) {
     });
   const states = [];
   const errors = [];
+  const turns = [];
   let voice;
   try {
     voice = await createVoice({
-      onTurn: async () => {},
+      onTurn: async (payload) => turns.push(payload),
       onState: (state) => states.push(state),
       onLevel() {},
       onError: (error) => errors.push(error),
@@ -128,6 +151,9 @@ async function withBrowser(run, decode = async () => new ArrayBuffer(8)) {
       intervals,
       states,
       errors,
+      turns,
+      trackEvents,
+      contextEvents,
       microphoneRequests: () => microphoneRequests,
       sourceDisconnected: () => sourceDisconnected,
     });
@@ -164,6 +190,130 @@ test("voice acquires the microphone and releases recording, tracks, and audio on
       voice.listen();
       assert.equal(recorders.length, 1);
     },
+  );
+});
+
+test("turn detection recognizes quiet speech and submits after a short pause", () => {
+  const detect = createTurnDetector(0);
+  for (let now = 0; now < 320; now += 80) detect(0.0005, now);
+  detect(0.006, 320);
+  assert.equal(detect(0.006, 400).heardSpeech, true);
+  assert.equal(detect(0.0005, 1040).shouldSend, false);
+  assert.equal(detect(0.0005, 1200).shouldSend, true);
+});
+
+test("steady background noise does not block the endpoint or count as speech", () => {
+  const detect = createTurnDetector(0);
+  for (let now = 0; now < 800; now += 80) {
+    const result = detect(0.02, now);
+    assert.equal(result.heardSpeech, false);
+    assert.equal(result.shouldSend, false);
+  }
+  detect(0.08, 800);
+  assert.equal(detect(0.08, 880).heardSpeech, true);
+  assert.equal(detect(0.02, 1680).shouldSend, true);
+});
+
+test("pre-call room calibration permits speech immediately after caller playback", () => {
+  const detect = createTurnDetector(0, 0.0005);
+  for (let now = 0; now <= 960; now += 80) detect(0.006, now);
+  assert.equal(detect(0.0005, 1760).shouldSend, true);
+});
+
+test("unmuting resumes a suspended caller without starting capture over playback", async () => {
+  await withBrowser(
+    async ({ voice, contexts, players, recorders, states, contextEvents }) => {
+      await voice.play("AQID");
+      contexts[0].state = "suspended";
+      contextEvents.get("statechange")();
+      assert.equal(states.at(-1), "error");
+      await voice.setMuted(true);
+      await voice.setMuted(false);
+      assert.equal(contexts[0].state, "running");
+      assert.equal(states.at(-1), "speaking");
+      assert.equal(recorders.length, 0);
+      players[0].onended();
+      assert.equal(recorders.length, 1);
+      assert.equal(states.at(-1), "listening");
+    },
+  );
+});
+
+test("a single click is not speech and the recording deadline is explicit", () => {
+  const detect = createTurnDetector(0);
+  for (let now = 0; now < 320; now += 80) detect(0.0005, now);
+  detect(0.1, 320);
+  assert.equal(detect(0.0005, 400).heardSpeech, false);
+  const result = detect(0.0005, 30_000);
+  assert.equal(result.expired, true);
+  assert.equal(result.shouldSend, false);
+});
+
+test("Send voice submits captured audio exactly once without needing volume detection", async () => {
+  await withBrowser(async ({ voice, recorders, turns, states, intervals }) => {
+    voice.listen();
+    assert.equal(voice.sendTurn(), true);
+    assert.equal(voice.sendTurn(), false);
+    assert.equal(recorders[0].state, "inactive");
+    assert.equal(intervals.size, 0);
+    assert.equal(states.at(-1), "thinking");
+    await new Promise(setImmediate);
+    assert.equal(turns.length, 1);
+    assert.equal(turns[0].mimeType, "audio/webm;codecs=opus");
+    assert.ok(turns[0].audio);
+  });
+});
+
+test("muting while voice is encoding does not discard a finalized turn", async () => {
+  await withBrowser(async ({ voice, turns, track }) => {
+    voice.listen();
+    voice.sendTurn();
+    await voice.setMuted(true);
+    await new Promise(setImmediate);
+    assert.equal(track.enabled, false);
+    assert.equal(turns.length, 1);
+  });
+});
+
+test("closing while voice is encoding cannot send a stale recording", async () => {
+  await withBrowser(async ({ voice, turns }) => {
+    voice.listen();
+    voice.sendTurn();
+    voice.close();
+    await new Promise(setImmediate);
+    assert.equal(turns.length, 0);
+  });
+});
+
+test("recorder errors and lost microphones leave listening state explicitly", async () => {
+  await withBrowser(
+    async ({ voice, recorders, states, errors, intervals, trackEvents }) => {
+      voice.listen();
+      recorders[0].onerror();
+      assert.equal(states.at(-1), "error");
+      assert.equal(intervals.size, 0);
+      assert.equal(voice.sendTurn(), false);
+      assert.match(errors.at(-1), /recording stopped/);
+      voice.listen();
+      trackEvents.get("ended")();
+      assert.equal(states.at(-1), "error");
+      assert.equal(intervals.size, 0);
+      assert.match(errors.at(-1), /disconnected/);
+    },
+  );
+});
+
+test("recorder start failures are caught and never claim to be listening", async () => {
+  await withBrowser(
+    async ({ voice, states, errors, intervals }) => {
+      assert.doesNotThrow(() => voice.listen());
+      assert.equal(states.at(-1), "error");
+      assert.ok(!states.includes("listening"));
+      assert.equal(intervals.size, 0);
+      assert.match(errors.at(-1), /could not start/);
+    },
+    undefined,
+    { failStart: true },
   );
 });
 

@@ -30,8 +30,17 @@ const questions = {
 };
 
 export default function CallRoom({ practice }) {
-  const { session, mode, muted, ending, level, send, finish, toggleMic } =
-    practice;
+  const {
+    session,
+    mode,
+    muted,
+    ending,
+    level,
+    send,
+    finish,
+    toggleMic,
+    sendVoice,
+  } = practice;
   const [elapsed, setElapsed] = useState(0);
   const [text, setText] = useState("");
   const [showTranscript, setShowTranscript] = useState(
@@ -111,10 +120,12 @@ export default function CallRoom({ practice }) {
                   ? mode === "speaking"
                     ? "Caller speaking"
                     : mode === "thinking"
-                      ? "Caller is thinking"
+                      ? "Preparing reply"
                       : muted
                         ? "Microphone muted"
-                        : "Listening to you"
+                        : mode === "error"
+                          ? "Microphone unavailable"
+                          : "Listening to you"
                   : mode === "thinking"
                     ? "Caller is replying"
                     : "Your turn"}
@@ -122,7 +133,9 @@ export default function CallRoom({ practice }) {
             {voice && (
               <Waveform
                 large
-                active={voice && !muted && mode !== "thinking" && !ending}
+                active={
+                  !muted && ["listening", "speaking"].includes(mode) && !ending
+                }
                 level={level}
               />
             )}
@@ -132,7 +145,15 @@ export default function CallRoom({ practice }) {
                 {ending
                   ? "Saving the transcript and preparing your debrief."
                   : voice
-                    ? "Your microphone pauses while the caller speaks."
+                    ? mode === "error"
+                      ? "You can continue by typing a response."
+                      : muted
+                        ? "Unmute to speak, or type a response."
+                        : mode === "listening"
+                          ? "Pause after speaking to send automatically, or press Send voice."
+                          : mode === "thinking"
+                            ? "Transcribing your response and preparing the reply."
+                            : "Your microphone pauses while the caller speaks."
                     : "Type your response to continue the call."}
               </p>
             )}
@@ -146,6 +167,16 @@ export default function CallRoom({ practice }) {
                   onClick={toggleMic}
                 >
                   {muted ? <MicOff size={20} /> : <Mic size={20} />}
+                </button>
+              )}
+              {voice && (
+                <button
+                  className="button secondary"
+                  onClick={sendVoice}
+                  disabled={mode !== "listening" || muted || ending}
+                >
+                  <Send size={16} />
+                  Send voice
                 </button>
               )}
               <button

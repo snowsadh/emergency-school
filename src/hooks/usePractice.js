@@ -199,8 +199,8 @@ export default function usePractice(onComplete) {
           cause.message ||
             "That response could not be sent. Try again, or end the call to keep your transcript.",
         );
-        voice.current?.listen();
-        setMode("listening");
+        if (voice.current) voice.current.listen();
+        else setMode("listening");
       }
     } finally {
       if (!current.current || current.current.id === snapshot.id)
@@ -288,5 +288,6 @@ export default function usePractice(onComplete) {
     send,
     finish,
     toggleMic,
+    sendVoice: () => voice.current?.sendTurn(),
   };
 }

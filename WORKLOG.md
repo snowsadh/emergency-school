@@ -30,6 +30,19 @@ Last updated: 24 October 2026.
 
 ## Work completed / decisions changed
 
+### Voice turn recovery, expressive callers, and scored assessment — in progress
+
+Founder reported that voice practice stays on "Listening" and caller delivery sounds flat; they also requested a serious scored report rather than overview-only feedback or generic trait ratings.
+
+Plan:
+
+- Replace the fixed microphone threshold with short background calibration and separate speech-start/end thresholds; retain automatic turn submission and add a manual Send voice fallback. Reproduce quiet speech, background noise, recording failures, and genuine browser audio submission in tests.
+- Give GPT shared, specific actor-direction instructions for Fish Drama 3, with pacing, breaths, emphasis, difficulty-appropriate intensity, and gradual emotional changes. Preserve caller directions in conversation context; keep scenario facts immutable and display transcripts without tags.
+- Add a versioned, transcript-grounded call-handling rubric with server-calculated points, a critical-findings section, an evidence ledger, assessment coverage, and export. Withhold an overall score when too little can be assessed. Weights are project-defined, informed by APCO's public calltaker training criteria, not validated professional or Indian 112 grading.
+- Verify offline first, inspect desktop/mobile report and call controls, then perform a bounded real-provider smoke test if needed. Keep separate checkpoint commits and never print credentials.
+
+Voice checkpoint: replaced the fixed `0.018` amplitude threshold with room calibration before the first caller plays (320ms fallback if no pre-call samples exist), separate speech-start/end thresholds, and an 800ms endpoint pause. Added Send voice without requiring the detector to classify speech. Recorder failures, lost microphones, and suspended audio now leave "Listening" explicitly; finalized audio survives muting but cannot send after call closure. Fixed suspended caller playback not resuming on unmute, and removed a hook state update that overwrote recorder errors with a false "Listening" state. **14/14 voice unit checks pass.** The expanded native-Chrome test passed automatic submission from a quiet synthetic microphone fixture, manual audio submission, mute, typed fallback, recorder-error recovery state, and debrief, with provider routes mocked and all other API routes blocked. Inspected the mobile call controls and retained the existing design. This is still amplitude-based, half-duplex detection, not a trained speech detector or natural interruption support; real speech and changing room noise still need user testing.
+
 ### Call-screen copy and header cleanup — complete
 
 Founder feedback: "Simulated line" makes the working call experience feel like a fake/demo. Replace that label with "Browser call" and make the introduction direct. Remove the redundant page-title / "Voice ready" top bar; credential presence is not an audio-health check. Preserve the existing Onest typography, warm neutral palette, session layout, real provider behavior, and explicit training disclaimer in the footer. This is a focused copy and layout correction, not a new visual direction.
