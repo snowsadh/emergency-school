@@ -38,17 +38,23 @@ The default OpenAI models are explicit implementation choices, not a claim that 
 ## How a call works
 
 1. The server uses the official OpenAI JavaScript SDK and a structured response schema to generate the incident facts, caller personality, panic, coherence, and opening. Optional preferences constrain this request. Facts stay server-side while a random call is active.
-2. OpenAI writes short caller dialogue with performance directions such as `[anxious, hesitant]`. The server sends that exact dialogue to Fish's speech endpoint with the `model: drama-3` header.
-3. The browser plays the caller's voice. When playback ends, it listens for the trainee. Approximately one second of silence ends a voice turn, which OpenAI transcribes. The transcript and original incident facts drive the next reply.
+2. OpenAI writes short caller dialogue with specific actor directions for emotion, pacing, breath, tension, and selective emphasis. The same guidance applies to openings and replies; prior delivery directions remain in the model's context for continuity. The server sends the exact tagged dialogue to Fish's speech endpoint with the `model: drama-3` header. Tags are removed from the displayed transcript.
+3. The browser plays the caller's voice. When playback ends, it listens for the trainee. It estimates background levels while the first caller is being generated, then uses separate speech-start/end thresholds. An approximately 800ms pause ends a detected voice turn, which OpenAI transcribes. **Send voice** submits the current recording without waiting for detection. The transcript and original incident facts drive the next reply.
 4. This repeats until the trainee ends the call, or the caller gives an explicit goodbye. The report uses the server's transcript and AI-generated reflection, with quotes and timestamps resolved from actual conversation segments.
 
-This first version is **half-duplex**: the microphone pauses while the caller speaks. It does not yet support naturally interrupting the caller. Voice turns are limited to 30 seconds, with a maximum of 120 transcript turns per call. Typing is available as a fallback. If only OpenAI is configured, the app offers a clearly labelled generated text conversation without Fish speech.
+This first version is **half-duplex**: the microphone pauses while the caller speaks. It does not yet support naturally interrupting the caller. Detection uses sound amplitude, not a trained speech detector: quiet or changing environments can still require Send voice. If pre-call room samples are unavailable, it uses a 320ms calibration at the start of listening. Voice turns are limited to 30 seconds, with a maximum of 120 transcript turns per call. Recording/device failures show an error rather than claiming the app is listening. Typing is available as a fallback. If only OpenAI is configured, the app offers a clearly labelled generated text conversation without Fish speech.
 
 Difficulty changes caller delivery and information coherence—not injuries or incident severity. Fixed fictional cases in `shared/scenarios.mjs` are used only by the offline sample and authored example. The live generator does not select from that catalogue. No model weights were trained or fine-tuned.
 
 ## Debriefs and data
 
-Debriefs show transcript-linked moments, a next-practice focus, personal notes, and complete text export. They are reflection aids, not validated grading or professional certification. Numerical scores and grading weights are intentionally deferred.
+Debriefs include a scored call-handling assessment, critical findings, a criterion ledger, transcript-linked moments, a next-practice focus, personal notes, and complete text export. OpenAI proposes evidence-linked judgements; server code owns the weights and arithmetic. No model weights were trained for grading.
+
+The `call-handling-v1` prototype rubric uses incident location (20 points), location verification (10), immediate exposure (15), people at risk (10), incident picture (15), focused follow-up (10), simulated reconnect plan (10), factual confirmation (5), and closure/expectations (5). Met earns full credit, partial earns half, and a demonstrated missed opportunity earns zero. Unassessable criteria are excluded, not failed. Fabricated references and unsupported judgements cannot contribute points; critical location/exposure findings remain visible separately from the total.
+
+An overall score needs at least three recorded trainee turns and 60% assessable weighted coverage. It is earned points divided by assessable points, normalized to 100; incomplete coverage remains provisional. The report shows the denominator, coverage, exact evidence, and project-defined method. It does not measure voice quality, response speed, clinical competence, or dispatch-system performance. Scripted samples and legacy sessions are not retroactively graded.
+
+The topics are informed by [APCO's public call-taker training criteria](https://atpa.apcointl.org/guest/chapter-7), but the weights, half-credit rule, and coverage thresholds are our design choices—not an official APCO assessment or Indian 112 protocol. Instructor validation and calibration remain necessary before any professional-use claim. Scores are practice feedback, not certification or operational readiness.
 
 The app keeps up to 40 completed sessions in this browser. They are not synced to an account. Active server sessions are kept in memory for up to an hour and are lost on restart. Clearing the journal deletes only browser history—not provider-held data.
 
@@ -62,7 +68,7 @@ npm run build
 npm run test:browser
 ```
 
-The browser check requires the dev server running and Google Chrome at `/usr/bin/google-chrome-stable`. Override `CHROME_PATH` or `TEST_URL` if needed. It checks random/guided sample flows, optional preferences, report evidence, note/history persistence, exports, and responsive layouts. The sample suite blocks provider routes even when the server has real keys. A second browser check exercises native microphone access and audio playback using a fake input device and mocked provider responses. Screenshots go to the ignored `artifacts/` directory.
+The browser check requires the dev server running and Google Chrome at `/usr/bin/google-chrome-stable`. Override `CHROME_PATH` or `TEST_URL` if needed. It checks random/guided sample flows, optional preferences, report evidence, note/history persistence, exports, and responsive layouts. The sample suite blocks provider routes even when the server has real keys. A second browser check exercises native microphone auto-submission with a quiet synthetic audio fixture, manual Send voice, caller playback, mute, typed fallback, and recorder-failure recovery using mocked provider responses. Unmocked API routes are blocked. Screenshots go to the ignored `artifacts/` directory.
 
 These regular tests use mocked providers; passing them does **not** verify live model quality, speech recognition, latency, or emotional delivery.
 

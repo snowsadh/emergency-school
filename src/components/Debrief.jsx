@@ -3,6 +3,7 @@ import {
   ArrowDownToLine,
   ArrowLeft,
   ArrowRight,
+  AlertCircle,
   Check,
   ChevronDown,
   Clock3,
@@ -11,6 +12,93 @@ import {
 } from "lucide-react";
 import { difficulties, domains, formatTime } from "../../shared/scenarios.mjs";
 import "../styles/debrief.css";
+
+const criterionStatus = {
+  met: "Met",
+  partial: "Partial",
+  missed: "Not demonstrated",
+  not_assessable: "Not assessable",
+};
+const formatPoints = (value) =>
+  Number.isFinite(value) ? String(Math.round(value * 10) / 10) : "—";
+
+function readReview(session) {
+  return session.kind === "sample" && !session.example ? null : session.review;
+}
+
+function readAssessment(session, review) {
+  const assessment = review?.assessment;
+  if (!assessment?.criteria?.length) return null;
+  const traineeTurns = (session.transcript || []).filter(
+    (segment) => segment.role === "user" && segment.final !== false,
+  ).length;
+  // Never present a total when the transcript cannot support one, including old local records.
+  const score =
+    traineeTurns >= 3 &&
+    assessment.coverage >= 60 &&
+    Number.isFinite(assessment.score)
+      ? assessment.score
+      : null;
+  return {
+    ...assessment,
+    score,
+    provisional: assessment.provisional || score === null,
+  };
+}
+
+function evidenceFor(ids, transcript) {
+  return [...new Set(ids || [])]
+    .map((id) => transcript.find((segment) => segment.segmentId === id))
+    .filter(Boolean);
+}
+
+function appendAssessment(lines, assessment, transcript, example) {
+  lines.push(
+    example ? "AUTHORED ASSESSMENT EXAMPLE" : "EVIDENCE-BASED ASSESSMENT",
+    assessment.score === null
+      ? "Overall score: withheld — insufficient evidence."
+      : `Overall score: ${formatPoints(assessment.score)}/100${assessment.provisional ? " (provisional)" : ""}`,
+    `Rubric: ${assessment.rubricVersion}`,
+    `Assessable coverage: ${formatPoints(assessment.coverage)}% of weighted rubric`,
+    `Points earned: ${formatPoints(assessment.earned)} / ${formatPoints(assessment.possible)} assessable points`,
+    "The total is withheld below three trainee turns or 60% assessable coverage. Unassessable criteria are excluded, not treated as passes or failures.",
+    "Statuses are evidence judgments. Fixed project-defined weights determine points; this is not a validated or official agency assessment.",
+    "",
+    "CRITICAL FINDINGS",
+  );
+  if (!assessment.criticalFindings?.length)
+    lines.push(
+      "No critical omissions were identified in the assessable criteria. This is not a safety or readiness clearance.",
+    );
+  for (const finding of assessment.criticalFindings || []) {
+    lines.push(finding.title, finding.reason);
+    for (const segment of evidenceFor(finding.evidenceIds, transcript))
+      lines.push(
+        `[${formatTime(segment.at)}] ${segment.role === "user" ? "You" : "Caller"}: “${segment.text}”${segment.playbackConfirmed === false ? " [Audio playback not fully confirmed]" : ""}`,
+      );
+    lines.push("");
+  }
+  lines.push("", "CRITERION LEDGER");
+  for (const criterion of assessment.criteria) {
+    lines.push(
+      `${criterion.label}${criterion.critical ? " [Critical check]" : ""}`,
+      `Status: ${criterionStatus[criterion.status] || "Not assessable"}`,
+      `Points: ${formatPoints(criterion.points)} / ${formatPoints(criterion.weight)}${criterion.status === "not_assessable" ? " — excluded from the total" : ""}`,
+      `Expected: ${criterion.expected || "Not supplied."}`,
+      `Observed: ${criterion.rationale || "No observation supplied."}`,
+      `Next action: ${criterion.nextAction || "Review the transcript with an instructor."}`,
+    );
+    const evidence = evidenceFor(criterion.evidenceIds, transcript);
+    if (!evidence.length)
+      lines.push("Evidence: no specific transcript reference supplied.");
+    for (const segment of evidence)
+      lines.push(
+        `Evidence [${formatTime(segment.at)}] ${segment.role === "user" ? "You" : "Caller"}: “${segment.text}”${segment.playbackConfirmed === false ? " [Audio playback not fully confirmed]" : ""}`,
+      );
+    lines.push("");
+  }
+}
+
 function describeSession(session) {
   return {
     domain:
@@ -34,8 +122,8 @@ export function createReportText(session) {
   const transcript = (session.transcript || []).filter(
     (segment) => segment.final !== false,
   );
-  const review =
-    session.kind === "sample" && !session.example ? null : session.review;
+  const review = readReview(session);
+  const assessment = readAssessment(session, review);
   const lines = [
     "EMERGENCY SCHOOL — CALL DEBRIEF",
     session.example
@@ -57,6 +145,14 @@ export function createReportText(session) {
       review.overview || "",
       "",
     );
+    if (assessment)
+      appendAssessment(lines, assessment, transcript, session.example);
+    else
+      lines.push(
+        "RUBRIC ASSESSMENT",
+        "Not scored. This session has no evidence-based rubric assessment.",
+        "",
+      );
     for (const moment of review.moments || []) {
       const segment = transcript.find(
         (item) => item.segmentId === moment.segmentId,
@@ -98,6 +194,254 @@ export function createReportText(session) {
   );
   return lines.join("\n");
 }
+
+function AssessmentSummary({ assessment, example, turns }) {
+  if (!assessment)
+    return (
+      <section
+        className="assessment-unavailable"
+        aria-label="Rubric assessment"
+      >
+        <div>
+          <span className="eyebrow">Rubric assessment</span>
+          <h2>Not scored</h2>
+        </div>
+        <p>
+          This {example ? "example" : "session"} has no rubric assessment.
+          Scripted rehearsals and older sessions are not graded retrospectively.
+        </p>
+      </section>
+    );
+  const scored = assessment.score !== null;
+  return (
+    <section className="assessment-band" aria-label="Assessment summary">
+      <div className="assessment-result">
+        <span className="eyebrow">
+          {example ? "Illustrative score" : "Evidence-based score"}
+        </span>
+        {scored ? (
+          <p className="assessment-score">
+            <strong>{formatPoints(assessment.score)}</strong>
+            <span>/ 100</span>
+          </p>
+        ) : (
+          <h2>
+            Insufficient
+            <br />
+            evidence
+          </h2>
+        )}
+        <span className="assessment-qualification">
+          {assessment.provisional
+            ? "Provisional · limited evidence"
+            : example
+              ? "Authored judgments, fixed weights"
+              : "Fixed weights, transcript evidence"}
+        </span>
+      </div>
+      <div className="assessment-context">
+        <p>
+          {scored
+            ? "A record of what this conversation demonstrated—not a measure of readiness for real calls."
+            : `${turns} trainee ${turns === 1 ? "turn is" : "turns are"} recorded. A total needs at least three trainee turns and 60% assessable coverage.`}
+        </p>
+        <dl>
+          <div>
+            <dt>Assessed coverage</dt>
+            <dd>
+              {formatPoints(assessment.coverage)}%
+              <span> of the weighted rubric</span>
+            </dd>
+          </div>
+          <div>
+            <dt>Points established</dt>
+            <dd>
+              {formatPoints(assessment.earned)}
+              <span>
+                {" "}
+                / {formatPoints(assessment.possible)} assessable points
+              </span>
+            </dd>
+          </div>
+          <div>
+            <dt>Rubric version</dt>
+            <dd className="assessment-version">{assessment.rubricVersion}</dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+  );
+}
+
+function AssessmentEvidence({ ids, transcript, label, onEvidence }) {
+  const evidence = evidenceFor(ids, transcript);
+  return evidence.length ? (
+    <div className="assessment-evidence">
+      {evidence.map((segment) => (
+        <button
+          key={segment.segmentId}
+          className="assessment-evidence-quote"
+          onClick={() => onEvidence(segment.segmentId)}
+          aria-label={`Read evidence for ${label} in the transcript at ${formatTime(segment.at)}`}
+        >
+          <span className="assessment-evidence-meta">
+            <span>
+              {segment.role === "user" ? "You" : "Caller"}
+              <span> · </span>
+              {formatTime(segment.at)}
+            </span>
+            <ArrowRight size={13} />
+          </span>
+          <span className="assessment-quote">“{segment.text}”</span>
+          {segment.playbackConfirmed === false && (
+            <span className="assessment-playback-note">
+              Audio playback was not fully confirmed.
+            </span>
+          )}
+        </button>
+      ))}
+    </div>
+  ) : (
+    <p className="criterion-evidence-empty">
+      No specific transcript reference was supplied. Read the full conversation
+      before drawing a conclusion.
+    </p>
+  );
+}
+
+function AssessmentLedger({ assessment, transcript, onEvidence }) {
+  if (!assessment) return null;
+  return (
+    <>
+      {assessment.criticalFindings?.length > 0 && (
+        <section
+          className="assessment-critical"
+          aria-labelledby="critical-findings-title"
+        >
+          <div className="critical-heading">
+            <AlertCircle size={17} />
+            <h2 id="critical-findings-title">Critical checks to revisit</h2>
+          </div>
+          <p>Review these independently of the overall score.</p>
+          {assessment.criticalFindings.map((finding) => (
+            <article key={finding.criterionId}>
+              <h3>{finding.title}</h3>
+              <p>{finding.reason}</p>
+              <AssessmentEvidence
+                ids={finding.evidenceIds}
+                transcript={transcript}
+                label={finding.title}
+                onEvidence={onEvidence}
+              />
+            </article>
+          ))}
+        </section>
+      )}
+      <section
+        className="report-section assessment-ledger"
+        aria-labelledby="criterion-ledger-title"
+      >
+        <div className="report-section-label">
+          <h2 id="criterion-ledger-title">Criterion ledger</h2>
+          <span className="muted">Fixed point weights</span>
+        </div>
+        <p className="ledger-intro">
+          Open a criterion to compare the expectation with what was recorded.
+        </p>
+        <div className="criterion-list">
+          {assessment.criteria.map((criterion) => (
+            <details
+              className={`criterion-row criterion-${criterion.status}`}
+              key={criterion.id}
+            >
+              <summary>
+                <span className="criterion-name">
+                  <strong>{criterion.label}</strong>
+                  {criterion.critical && <small>Critical check</small>}
+                </span>
+                <span className="criterion-status">
+                  {criterionStatus[criterion.status] || "Not assessable"}
+                </span>
+                <span className="criterion-points">
+                  <strong>{formatPoints(criterion.points)}</strong>
+                  <span> / {formatPoints(criterion.weight)}</span>
+                </span>
+                <ChevronDown size={15} />
+              </summary>
+              <div className="criterion-detail">
+                {criterion.status === "not_assessable" && (
+                  <p className="criterion-excluded">
+                    Excluded from the total. There was not enough evidence or
+                    opportunity to judge this criterion.
+                  </p>
+                )}
+                <dl>
+                  <div>
+                    <dt>Expected</dt>
+                    <dd>{criterion.expected}</dd>
+                  </div>
+                  <div>
+                    <dt>Observed</dt>
+                    <dd>{criterion.rationale}</dd>
+                  </div>
+                  <div>
+                    <dt>Next action</dt>
+                    <dd>
+                      {criterion.nextAction ||
+                        "Keep this behavior in your next practice and review it with an instructor."}
+                    </dd>
+                  </div>
+                </dl>
+                <AssessmentEvidence
+                  ids={criterion.evidenceIds}
+                  transcript={transcript}
+                  label={criterion.label}
+                  onEvidence={onEvidence}
+                />
+              </div>
+            </details>
+          ))}
+        </div>
+        <details className="assessment-method">
+          <summary>
+            How this assessment works
+            <ChevronDown size={14} />
+          </summary>
+          <div>
+            <p>
+              The model classifies transcript evidence against scenario facts.
+              Fixed, project-defined weights produce the points: met earns the
+              full weight, partial earns half, and not demonstrated earns zero.
+              Not assessable is excluded.
+            </p>
+            <p>
+              The overall score is the earned points divided by assessable
+              points, expressed out of 100. It is withheld below three trainee
+              turns or 60% weighted coverage; incomplete coverage remains
+              provisional. Critical findings stay visible separately.
+            </p>
+            <p>
+              The rubric draws on public call-taking training topics, not an
+              official scoring standard. Its weights have not been validated by
+              instructors.{" "}
+              <a
+                href="https://atpa.apcointl.org/guest/chapter-7"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Public call-taker training reference
+              </a>
+              . This is not an official Association of Public-Safety
+              Communications Officials (APCO) assessment, agency protocol, or
+              certification.
+            </p>
+          </div>
+        </details>
+      </section>
+    </>
+  );
+}
+
 export default function Debrief({
   session,
   saved,
@@ -115,8 +459,8 @@ export default function Debrief({
     (segment) => segment.final !== false,
   );
   const turns = transcript.filter((segment) => segment.role === "user").length;
-  const review =
-    session.kind === "sample" && !session.example ? null : session.review;
+  const review = readReview(session);
+  const assessment = readAssessment(session, review);
   const moments = (review?.moments || []).filter((moment) =>
     transcript.some((segment) => segment.segmentId === moment.segmentId),
   );
@@ -199,7 +543,8 @@ export default function Debrief({
 
       {session.example && (
         <div className="report-example-notice">
-          Authored example. This report is not part of your practice history.
+          Authored example. The judgments illustrate the report format; they are
+          not a model result or part of your practice history.
         </div>
       )}
       {!session.example && saved === false && (
@@ -208,6 +553,12 @@ export default function Debrief({
           leaving this page.
         </div>
       )}
+
+      <AssessmentSummary
+        assessment={assessment}
+        example={session.example}
+        turns={turns}
+      />
 
       <div className="report-layout">
         <div className="report-content">
@@ -233,6 +584,15 @@ export default function Debrief({
               </p>
             )}
           </section>
+
+          <AssessmentLedger
+            assessment={assessment}
+            transcript={transcript}
+            onEvidence={(segmentId) => {
+              setSelectedSegment(segmentId);
+              setShowTranscript(true);
+            }}
+          />
 
           {moments.length > 0 ? (
             <section className="report-section">
