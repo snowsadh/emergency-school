@@ -10,48 +10,47 @@ The published page does **not** specify a judging rubric, submission portal, rep
 
 ## Project positioning
 
-Emergency School provides repeated emergency-call practice through expressive synthetic callers. A trainee chooses incident interests, difficulty, language, and call frequency. Two modes share the same scenario engine:
+Emergency School provides instant emergency-call practice in the browser. The main action is **Start call**, with no required onboarding or customization:
 
-- **Practice:** start immediately, with guided or hidden-scenario options.
-- **Random Call:** receive an undisclosed scenario on the phone at an unpredictable time while availability is ON.
+- **Random:** meet an undisclosed caller and discover the situation through conversation. This is the default and main experience.
+- **Guided:** an optional secondary mode with a briefing and question prompts.
 
-The home screen centers the availability switch. A completed call leads to a short review, supporting transcript evidence, and performance history. No curriculum enrollment or skill-focus selection is needed.
+Incident interests, difficulty, and language are optional constraints. No selection means OpenAI chooses freely, in English by default. No phone numbers, schedule, frequency setting, or availability switch remain in scope. A completed call leads to a thoughtful transcript-backed debrief, reflection notes, and local session history. Numerical scoring is deferred.
 
 This positioning is a product decision, not an official event track. Fish’s expressive voices are a strong thematic match: [Drama 3](https://docs.fish.audio/features/text-to-speech/drama-3) accepts natural-language performance directions, sounds, and pauses. The demo should make those differences audible through a changing caller persona.
 
-## Fish implementation findings
+## Implementation direction
 
-Fish has a [hosted Agents platform](https://docs.fish.audio/agents/overview), currently in public beta, with browser conversations, speech recognition, speech synthesis, and turn handling. This is the first implementation path to evaluate because it avoids constructing every voice component separately.
+The implementation uses the official OpenAI JavaScript SDK for scenario generation, caller dialogue, transcription, and post-call feedback. Structured output schemas keep the incident record and review format consistent. This replaces the earlier hosted-agent proposal; no published Fish agent is needed.
 
-Use `drama-3` for speech and explicitly select `fish_audio:transcribe-stream-1` for Fish’s live transcription. The hosted agent’s default transcription provider is currently Deepgram; using Fish Agents alone does not mean Fish’s own transcription model is selected. See [voice and language configuration](https://docs.fish.audio/agents/build/voice-language). Language selection in the product should initially expose English and Hindi, subject to listening tests.
+OpenAI writes the caller’s dialogue with directions such as `[anxious, stumbling over words]`. The server sends this text to the [Fish speech endpoint](https://docs.fish.audio/api-reference/endpoint/openapi-v1/text-to-speech), explicitly using the `model: drama-3` header. Fish speaks the caller; OpenAI controls the incident and conversation. The first prototype pauses the microphone during caller playback, rather than claiming full-duplex interruption support.
 
-**Indian phone delivery is the main unresolved integration.** Fish documents an [outbound-call API](https://docs.fish.audio/agents/telephony/outbound-calls), but purchased numbers can currently dial only the US, Canada, Japan, UK, Italy, Australia, and Mexico. India is excluded. Fish also documents [bringing a carrier connection](https://docs.fish.audio/agents/telephony/byo-sip), which routes outbound calls through that carrier. A compatible carrier must actually support the intended Indian destination and account. No such route has been provisioned or tested here.
+There is no telephone delivery integration or Indian carrier blocker in the revised scope. Everything happens inside the website. English and Hindi are exposed; live quality and voice suitability still need listening tests.
 
-Browser voice practice is separately documented through the [Web SDK](https://docs.fish.audio/agents/deploy/web-sdk). It is useful for immediate practice and a demo, but an in-browser ringing screen does not demonstrate a real phone callback.
+The offline sample uses scripted text and is explicitly labelled. It does not demonstrate live OpenAI dialogue or Fish speech.
 
 ## Credits and costs
 
 Plus/web credits and Developer API credit are separate balances; the existing Plus subscription must not be assumed to fund the app. Fish describes that distinction in its [credit explanation](https://fish.audio/es/blog/image-video-generation-mcp/?articleLocale=en).
 
-[Agents pricing](https://docs.fish.audio/agents/pricing) lists a $0.06/minute base conversation rate, a $5 trial balance, and API credit for subsequent usage. Telephone delivery and some language models add charges. With an imported carrier, Fish bills the conversation and the carrier bills the phone leg. Four five-minute calls daily for 30 days would therefore cost **$36 in Fish base conversation fees**, before carrier and other additions. This is an illustrative calculation, not an account quote.
+This architecture incurs separate OpenAI generation/transcription and Fish text-to-speech usage, not hosted-agent or carrier minutes. Check the selected models and account balances before a live demo. No credit balance or unlimited allowance has been verified by this repository.
 
 ## Recommended demonstration
 
-1. Select interests, language, difficulty, and grit.
-2. Turn availability ON; show a clearly labeled shortened demo schedule.
-3. Receive a real call if the Indian carrier route is verified.
-4. Handle a caller whose uncertainty and delivery change during the conversation.
-5. Open a review showing one successful action, one omission, and transcript evidence.
-6. Turn availability OFF and show that a pending drill will not dispatch.
+1. Open the website and press **Start call**, without filling anything in.
+2. Discover the incident through a caller whose personality and delivery are generated for that session.
+3. Hear Fish deliver the dialogue with emotional directions while the incident facts remain stable.
+4. End the call and open evidence-linked feedback, the complete transcript, and a reflection note.
+5. Optionally narrow the next call by incident interest, difficulty, language, or guided mode.
 
-If carrier setup is unavailable, demonstrate browser practice and label phone callbacks as pending. Do not claim a completed callback integration from a mock ringing interface.
+If credentials are unavailable, show the labelled text sample and authored example report. Do not claim a live voice integration has been verified from the sample or mocked tests.
 
-## Before building
+## Before a live demonstration
 
-- Check the Developer API balance and hosted Agents access without assuming Plus credit portability.
+- Configure both server-side Developer API keys and verify model access without assuming Plus credit portability.
 - Confirm any event-specific rules announced to attendees.
 - Test one English and one Hindi conversation with the intended Fish models.
-- Test one consenting Indian phone destination through the selected carrier.
-- Use the prototype scoring and scenario rules in [research.md](research.md).
+- Verify microphone permissions, turn boundaries, caller playback, failure recovery, and transcript fidelity.
+- Treat the scenario/assessment research in [research.md](research.md) as references, not a validated readiness instrument.
 
-The detailed September notes are preserved under `docs/archive/` as historical material.
+See [WORKLOG.md](WORKLOG.md) for actual checkpoints and [README.md](README.md) for the current setup and limitations.

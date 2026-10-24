@@ -2,7 +2,17 @@
 
 Verified 24 October 2026. India’s 112 call-taker is the assumed initial learner. This report incorporates the revised product direction and Fish Audio event. It replaces provider assumptions in the September notes.
 
-## Decisions carried forward
+## Current implementation scope — supersedes the earlier proposal below
+
+The founder revised the product during development: **random instant browser calls are the main experience**, with no required onboarding or selections. Incident interests, difficulty, language, and guided mode are all optional. There are no phone numbers, scheduled calls, calling periods, grit frequency, or availability switch.
+
+The official OpenAI SDK now generates a new fictional incident, immutable facts, caller personality, and subsequent dialogue. Fish Drama 3 speaks dialogue containing bracketed delivery directions. OpenAI also transcribes trainee voice turns and produces transcript-linked practice feedback. The first prototype pauses microphone capture during caller playback; full-duplex interruption handling is not implemented. Fixed reference scenarios support the explicitly labelled offline sample only.
+
+Scoring weights are **not finalized**. The debrief prioritizes evidence, reflection, and a next-practice focus without a numerical readiness score. The scorecard below remains a research proposal, not the implemented assessment system or an agreed product decision.
+
+Sections 2–3 and the telephony / hosted-agent implementation proposals below are retained as historical research, not requirements. No scheduled phone flow is being built. Consult [README.md](README.md) for the actual architecture and [WORKLOG.md](WORKLOG.md) for verified development progress. No live provider or operator-validation results should be inferred from the prototype's mocked tests.
+
+## Earlier decisions — historical, superseded where noted above
 
 These are product choices supplied by the founder, rather than findings that research must approve:
 

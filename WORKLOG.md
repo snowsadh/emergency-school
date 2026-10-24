@@ -25,7 +25,7 @@ Last updated: 24 October 2026.
 - [x] Finish the evidence-led report, local session history, and reflection notes.
 - [x] Apply and review desktop/mobile styling and keyboard accessibility.
 - [x] Add runnable backend and browser checks; run tests and a production build.
-- [ ] Update setup instructions and reconcile earlier research with the final scope.
+- [x] Update setup instructions and reconcile earlier research with the final scope.
 
 ## Work completed / decisions changed
 
@@ -35,19 +35,22 @@ Created a React shell, Vite configuration, native Node HTTP server, fictional re
 
 ### Founder corrections incorporated
 
-Random now has product priority, and every practice preference is optional. The hosted-agent path is being replaced rather than retained: the founder explicitly wants the OpenAI SDK to control scenario generation and conversation, with Fish used for expressive speech. Existing fictional cases are retained only for the explicitly labelled offline sample, not as the production scenario generator.
+Random now has product priority, and every practice preference is optional. The hosted-agent path has been replaced rather than retained: the founder explicitly wants the OpenAI SDK to control scenario generation and conversation, with Fish used for expressive speech. Existing fictional cases are retained only for the explicitly labelled offline sample, not as the production scenario generator.
 
 ### Current build state
 
-The first complete local prototype is implemented. Desktop and mobile screenshots have been inspected; the automated sample flow and production build pass. Final source cleanup and setup documentation are being completed. No live provider request has been made.
+The first complete local prototype is implemented. Desktop and mobile screenshots have been inspected; automated sample and real-browser audio flows pass against both the development server and production build, with model responses mocked. Source has been consistently formatted and setup documentation is complete. No live provider request has been made.
 
 ## Verified checkpoints
 
 1. `f2a8792` — Preserve existing hackathon/product research and establish this build log.
 2. `2d6f342` — Backend checkpoint: **4/4 tests passed**. Includes empty-scope defaults, structured OpenAI requests, a mocked complete voice call, Fish performance-tag forwarding, hidden scenario facts, playback acknowledgement, idempotent call ending, and explicit failure paths. Syntax checks passed. Providers are mocked; this does not establish live model or audio quality.
 3. `9b08da9` — Independent lifecycle review: backend regressions and browser-audio unit checks added. **12/12 tests passed.** Checked end-during-reply, overlapping turns, failed speech generation, failed model reply, microphone cleanup, mute/unmute while thinking, and stale playback. Fixed the pending-reply microphone race and stale audio playback checks. Rechecked difficulty prompt wording and clarified that microphone audio is temporarily captured, but not stored by the app.
-4. Debrief checkpoint: evidence-linked feedback, original-transcript quotes, complete report export, reflection notes, real local history, and activity-only progress. Authored examples are separate from user activity; scripted samples receive no fabricated grading. Automated checks now pass **14/14**.
+4. `b36f859` — Debrief checkpoint: evidence-linked feedback, original-transcript quotes, complete report export, reflection notes, real local history, and activity-only progress. Authored examples are separate from user activity; scripted samples receive no fabricated grading. Automated checks now pass **14/14**.
 5. Integrated browser check: `npm run test:browser` passed zero-onboarding random practice, optional guided/Hindi choices, two sample calls, report evidence navigation, note persistence, export contents, reload persistence, and layouts at 375/390/768/1440px. The offline sample made **zero** `/api/sessions` requests. `npm run build` passed. Live provider output/voice quality remains unverified.
+6. Added a separate real-Chrome audio check using a fake microphone and local WAV fixture, with model/provider responses mocked. Browser permissions, native audio decoding/playback, microphone mute, typed fallback, playback acknowledgement, and AI-debrief rendering passed. This is an integration test, not a listening-quality test.
+7. `c1baf18` — Consistent core-source formatting and removal of the obsolete hosted-agent prompt / unused lexical-scorecard helpers.
+8. `ac57acf` — One-click random practice, optional customization and guided mode, browser call lifecycle, responsive visual system, and repeatable browser checks. `TEST_URL=http://127.0.0.1:5174 npm run test:browser` also passed against the production server, not only Vite development mode.
 
 ## Verification and external dependencies
 
@@ -56,6 +59,8 @@ The first complete local prototype is implemented. Desktop and mobile screenshot
 - Official OpenAI Structured Outputs / speech-transcription docs and Fish Drama 3 / speech-endpoint docs have been checked. The TinyFish research helper returned an authentication error, so official documentation was fetched directly.
 - Current implementation targets a local, single-process prototype. Public deployment needs authentication and spending controls; active calls are not durable across server restarts.
 
-## Next handoff
+## Next handoff / remaining live validation
 
-Finish the current build, run local checks, then record exact commands/results and remaining limitations here. API keys belong only in the ignored `.env` file, never in this log or client code.
+The development app is available at `http://127.0.0.1:5173`. Add `OPENAI_API_KEY` and `FISH_API_KEY` to the ignored `.env` file, restart, and test a short English call before Hindi and more difficult callers. Check recognition fidelity, factual consistency, emotional delivery, latency, and how the debrief handles ambiguous or short calls. API keys belong only in `.env`, never in this log or client code.
+
+Known first-version limits: microphone capture pauses while the caller speaks (no natural interruptions yet); turn boundaries use a simple silence threshold; active server sessions are in-memory; feedback is generated for reflection rather than validated grading. Public deployment and a final scoring rubric are outside this checkpoint.
