@@ -19,7 +19,7 @@ Last updated: 24 October 2026.
 - [x] Create the React/Vite shell and local Node server.
 - [x] Make scope validation accept an entirely empty setup; make random the default.
 - [x] Add OpenAI scenario, caller-turn, transcription, and review code using structured responses.
-- [ ] Replace the first Fish-hosted-agent backend with the requested OpenAI → Fish speech loop. **In progress.**
+- [x] Replace the first Fish-hosted-agent backend with the requested OpenAI → Fish speech loop.
 - [ ] Build the one-click home screen and optional customization panel.
 - [ ] Implement browser audio capture, caller playback, microphone controls, and a transparent sample rehearsal.
 - [ ] Finish the evidence-led report, local session history, and reflection notes.
@@ -39,7 +39,12 @@ Random now has product priority, and every practice preference is optional. The 
 
 ### Current build state
 
-Implementation is unfinished. The interface has not yet been styled, the new API routes are being written, and no production build or end-to-end test has passed yet. Some files are temporarily incomplete while this replacement is in progress.
+The backend replacement is implemented. The interface is being revised and has not yet been styled or browser-tested. No production build has passed yet.
+
+## Verified checkpoints
+
+1. `f2a8792` — Preserve existing hackathon/product research and establish this build log.
+2. Backend checkpoint — `npm test`: **4/4 passed**. Includes empty-scope defaults, structured OpenAI requests, a mocked complete voice call, Fish performance-tag forwarding, hidden scenario facts, playback acknowledgement, idempotent call ending, and explicit failure paths. `node --check server/index.mjs` and `node --check server/api.mjs` passed. These tests mock providers and do not establish live model or audio quality.
 
 ## Verification and external dependencies
 
