@@ -30,7 +30,7 @@ export function createApi({ env = process.env, fetchImpl = fetch, intelligence =
     if (!path.startsWith('/api/')) return false;
     res.setHeader('Content-Type', 'application/json'); res.setHeader('Cache-Control', 'no-store');
     const send = (status, data) => { res.writeHead(status); res.end(JSON.stringify(data)); return true; };
-    if (path === '/api/status' && req.method === 'GET') return send(200, { openaiConfigured, fishConfigured, voiceConfigured: openaiConfigured && fishConfigured, model: env.OPENAI_MODEL || 'gpt-4.1', audioRecording: false });
+    if (path === '/api/status' && req.method === 'GET') return send(200, { openaiConfigured, fishConfigured, voiceConfigured: openaiConfigured && fishConfigured, model: env.OPENAI_MODEL || 'gpt-4.1', audioStored: false });
     if (req.method !== 'POST') return send(404, { error: 'Not found.' });
     const origin = req.headers.origin;
     if (origin && origin !== `http://${req.headers.host}` && origin !== `https://${req.headers.host}`) return send(403, { error: 'Only same-origin requests are allowed.' });

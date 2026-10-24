@@ -44,7 +44,8 @@ The backend replacement is implemented. The interface is being revised and has n
 ## Verified checkpoints
 
 1. `f2a8792` — Preserve existing hackathon/product research and establish this build log.
-2. Backend checkpoint — `npm test`: **4/4 passed**. Includes empty-scope defaults, structured OpenAI requests, a mocked complete voice call, Fish performance-tag forwarding, hidden scenario facts, playback acknowledgement, idempotent call ending, and explicit failure paths. `node --check server/index.mjs` and `node --check server/api.mjs` passed. These tests mock providers and do not establish live model or audio quality.
+2. `2d6f342` — Backend checkpoint: **4/4 tests passed**. Includes empty-scope defaults, structured OpenAI requests, a mocked complete voice call, Fish performance-tag forwarding, hidden scenario facts, playback acknowledgement, idempotent call ending, and explicit failure paths. Syntax checks passed. Providers are mocked; this does not establish live model or audio quality.
+3. Independent lifecycle review: backend regressions and browser-audio unit checks added. Checked end-during-reply, overlapping turns, failed speech generation, failed model reply, microphone cleanup, mute/unmute while thinking, and stale playback. Fixed the pending-reply microphone race and stale audio playback checks. Rechecked difficulty prompt wording and clarified that microphone audio is temporarily captured, but not stored by the app.
 
 ## Verification and external dependencies
 
