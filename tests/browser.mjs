@@ -26,10 +26,35 @@ async function clickNav(name) {
   await page.getByRole("navigation").getByRole("button", { name }).click();
 }
 async function noOverflow() {
+  // Viewport changes reach the renderer before responsive styles finish painting.
+  await page.evaluate(
+    () =>
+      new Promise((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(resolve)),
+      ),
+  );
+  const layout = await page.evaluate(() => ({
+    viewport: innerWidth,
+    document: document.documentElement.scrollWidth,
+    scrollX,
+    overflowing: [...document.querySelectorAll("body *")]
+      .map((element) => ({
+        tag: element.tagName,
+        className: String(element.className),
+        right: Math.round(element.getBoundingClientRect().right),
+        width: Math.round(element.getBoundingClientRect().width),
+      }))
+      .filter((element) => element.right > innerWidth + 1 && element.width > 0),
+  }));
+  if (layout.document > layout.viewport) {
+    console.log("Overflow diagnostic:", JSON.stringify(layout));
+    await page.screenshot({
+      path: "artifacts/overflow-failure.png",
+      fullPage: true,
+    });
+  }
   assert.ok(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= window.innerWidth,
-    ),
+    layout.document <= layout.viewport,
     "The page must not overflow horizontally.",
   );
 }
@@ -62,7 +87,7 @@ try {
   await page.waitForFunction(
     () => !document.querySelector(".start-call")?.disabled,
   );
-  assert.match(await page.locator("h1").textContent(), /A new call/);
+  assert.match(await page.locator("h1").textContent(), /Call practice/);
   assert.equal(
     await page.getByRole("combobox").count(),
     0,
@@ -114,7 +139,7 @@ try {
   );
 
   await clickNav("Practice room");
-  await page.getByRole("button", { name: /Want to shape the call/ }).click();
+  await page.locator(".customize-toggle").click();
   await page.getByRole("button", { name: /Fire & smoke/ }).click();
   await page
     .getByRole("combobox", { name: "Optional difficulty" })
@@ -142,7 +167,7 @@ try {
   await page.getByRole("button", { name: "Open example" }).click();
   await page
     .getByRole("button", {
-      name: /Read From a place to a location in the transcript/,
+      name: /Read Location clarification in the transcript/,
     })
     .click();
   await page.locator(".transcript-selected").waitFor();
@@ -150,6 +175,7 @@ try {
     await page.locator(".transcript-selected").textContent(),
     /Which city is that in/,
   );
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({
     path: "artifacts/debrief-desktop.png",
     fullPage: true,
@@ -167,13 +193,11 @@ try {
   await page.setViewportSize({ width: 375, height: 850 });
   await clickNav("Practice room");
   await noOverflow();
-  const customization = page.getByRole("button", {
-    name: /optional preferences/,
-  });
+  const customization = page.locator(".customize-toggle");
   if ((await customization.getAttribute("aria-expanded")) !== "true")
     await customization.click();
   await page.getByRole("button", { name: "Reset", exact: true }).click();
-  await page.getByRole("button", { name: /Want to shape the call/ }).click();
+  await page.locator(".customize-toggle").click();
   await page.screenshot({ path: "artifacts/home-mobile.png", fullPage: true });
   await clickNav("Practice record");
   assert.match(await page.locator(".progress-page").textContent(), /2/);

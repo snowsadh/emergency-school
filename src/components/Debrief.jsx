@@ -179,9 +179,9 @@ export default function Debrief({
             ? "Authored example"
             : session.kind === "sample"
               ? "Text rehearsal"
-              : "Your practice, in perspective"}
+              : "Completed session"}
         </div>
-        <h1>{review?.headline || "A call worth looking back on."}</h1>
+        <h1>{review?.headline || "Session debrief"}</h1>
         <p className="report-incident">
           {session.scenario?.title || "Practice session"}
         </p>
@@ -199,8 +199,7 @@ export default function Debrief({
 
       {session.example && (
         <div className="report-example-notice">
-          An authored example of the report format. This is not your session, a
-          measured result, or a validated assessment.
+          Authored example. This report is not part of your practice history.
         </div>
       )}
       {!session.example && saved === false && (
@@ -214,18 +213,18 @@ export default function Debrief({
         <div className="report-content">
           <section className="report-section report-overview">
             <div className="report-section-label">
-              <span className="eyebrow">The conversation</span>
+              <h2>Overview</h2>
               <span className="report-provenance">
                 {review
                   ? session.example
-                    ? "Authored reflection"
-                    : "AI reflection"
+                    ? "Authored example"
+                    : "AI feedback"
                   : "Transcript only"}
               </span>
             </div>
             <p>
               {review?.overview ||
-                `You contributed ${turns} ${turns === 1 ? "turn" : "turns"} to this practice. The conversation is preserved below. There is no automated assessment for this session; use your own reflection to decide what you want to revisit.`}
+                `${turns} trainee ${turns === 1 ? "turn was" : "turns were"} recorded. No automated assessment is available for this session. The full transcript is below.`}
             </p>
             {session.reviewError && (
               <p className="report-review-error">
@@ -238,8 +237,8 @@ export default function Debrief({
           {moments.length > 0 ? (
             <section className="report-section">
               <div className="report-section-label">
-                <h2>Moments to return to</h2>
-                <span className="muted">Grounded in your transcript</span>
+                <h2>Key moments</h2>
+                <span className="muted">Transcript references</span>
               </div>
               <div className="report-moments">
                 {moments.map((moment, index) => {
@@ -289,7 +288,7 @@ export default function Debrief({
             </section>
           ) : (
             <section className="report-section">
-              <h2>Start with one honest reflection.</h2>
+              <h2>Reflection questions</h2>
               <div className="reflection-prompts">
                 <p>What did you establish, and what did you assume?</p>
                 <p>Which question helped the caller become clearer?</p>
@@ -352,13 +351,11 @@ export default function Debrief({
 
         <aside className="report-aside">
           <section className="next-practice-card">
-            <span className="eyebrow">Take into your next call</span>
-            <h2>
-              {review?.nextPractice?.title || "One thing, done deliberately."}
-            </h2>
+            <span className="eyebrow">Next practice</span>
+            <h2>{review?.nextPractice?.title || "Review the conversation"}</h2>
             <p>
               {review?.nextPractice?.explanation ||
-                "Choose one question or habit to pay attention to. Your next practice does not need to fix everything."}
+                "Read the transcript and note what you would change before starting another call."}
             </p>
             {review?.nextPractice?.prompt && (
               <blockquote>{review.nextPractice.prompt}</blockquote>
@@ -370,16 +367,17 @@ export default function Debrief({
 
           <form className="report-note" onSubmit={saveNote}>
             <label htmlFor="session-note">
-              <NotebookPen size={16} /> A note to yourself
+              <NotebookPen size={16} /> Session notes
             </label>
             <textarea
               id="session-note"
+              aria-label="A note to yourself"
               value={note}
               onChange={(event) => {
                 setNote(event.target.value);
                 setNoteSaved(false);
               }}
-              placeholder="What do you want to remember?"
+              placeholder="Add a note about this session"
               rows={5}
               maxLength={3000}
             />

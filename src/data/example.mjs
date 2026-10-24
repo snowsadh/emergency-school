@@ -101,34 +101,34 @@ export const exampleSession = {
     },
   ],
   review: {
-    headline: "You made space for clarity.",
+    headline: "Location clarified. Safety checked later.",
     overview:
-      "This authored example shows how a debrief connects observations to the conversation. The call-taker acknowledged the caller, narrowed a vague location, and checked their immediate surroundings. One useful reflection: when would you ask about the caller’s own safety?",
+      "The call-taker confirmed a city and landmark, gathered the caller’s observations about the rider, and then checked exposure to traffic. The safety question came after questions about injuries. Consider that sequence when reviewing this example.",
     moments: [
       {
         kind: "strength",
         segmentId: "example-2",
-        title: "A calm opening",
+        title: "Initial acknowledgement",
         comment:
           "A short acknowledgement comes before the first question. The caller is given one clear thing to answer.",
       },
       {
         kind: "strength",
         segmentId: "example-4",
-        title: "From a place to a location",
+        title: "Location clarification",
         comment:
           "The follow-up asks for a city and a landmark rather than treating “near the flyover” as complete.",
       },
       {
         kind: "opportunity",
         segmentId: "example-8",
-        title: "Revisit the order of your questions",
+        title: "Caller safety check",
         comment:
           "The first direct question about the caller’s safety comes here. Reflect on whether you would want to establish their exposure to traffic sooner.",
       },
     ],
     nextPractice: {
-      title: "Make your first questions count.",
+      title: "Check immediate exposure earlier.",
       explanation:
         "In your next practice, notice the order in which you establish location, immediate danger, and what has happened. There is no score attached to this prompt.",
       prompt:

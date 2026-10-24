@@ -1,21 +1,15 @@
 import {
   ArrowRight,
   ArrowUpRight,
-  AudioLines,
-  BookOpen,
   Check,
   ChevronDown,
-  Headphones,
   LoaderCircle,
   Phone,
   Plus,
-  RotateCcw,
-  ShieldCheck,
   SlidersHorizontal,
 } from "lucide-react";
-import { difficulties, domains } from "../../shared/scenarios.mjs";
+import { difficulties, domains, formatTime } from "../../shared/scenarios.mjs";
 import { exampleSession } from "../data/example.mjs";
-import Waveform from "./Waveform.jsx";
 
 export default function PracticeRoom({
   scope,
@@ -27,12 +21,14 @@ export default function PracticeRoom({
   onStart,
   onOpen,
   latest,
+  onHistory,
 }) {
   const count =
     scope.domains.length +
     Number(Boolean(scope.difficulty)) +
     Number(Boolean(scope.language)) +
     Number(scope.mode === "guided");
+  const guided = scope.mode === "guided";
   const change = (key, value) =>
     setScope((previous) => ({ ...previous, [key]: value }));
   const toggle = (id) =>
@@ -42,89 +38,112 @@ export default function PracticeRoom({
         ? scope.domains.filter((d) => d !== id)
         : [...scope.domains, id],
     );
+  const difficulty =
+    difficulties.find((d) => d.id === scope.difficulty)?.name ||
+    "Any difficulty";
+
   return (
     <div className="practice-page">
-      <div className="practice-intro">
-        <span className="eyebrow">A safe place to find your voice</span>
-        <h1>
-          A new call.
-          <br />
-          <span>A different story.</span>
-        </h1>
+      <header className="practice-intro">
+        <h1>Call practice</h1>
         <p>
-          You won’t know who’s calling. That’s the practice.
-          <br />
-          Take a breath, pick up, and take it from there.
+          Take a simulated emergency call. Review your response when it ends.
         </p>
-      </div>
+      </header>
+
       <section
         className="practice-console"
         aria-label="Start an emergency training call"
       >
         <div className="console-topline">
-          <span>
-            <AudioLines size={16} />
-            {scope.mode === "guided" ? "Guided practice" : "Random practice"}
-          </span>
-          <span className="console-note">
-            {connecting
-              ? "Preparing your caller"
-              : "Your next story is unwritten"}
+          <span>New session</span>
+          <span className="session-mode">
+            {guided ? "Guided practice" : "Random call"}
           </span>
         </div>
-        <div className={`console-visual ${connecting ? "connecting" : ""}`}>
-          <Waveform active={connecting} large />
-          <div className="waveform-axis" />
+        <div className="session-surface">
+          <div className="session-brief">
+            <div className="line-label">
+              <span />
+              SIMULATED LINE
+            </div>
+            <h2>
+              {connecting
+                ? "Connecting…"
+                : guided
+                  ? "Guided call"
+                  : "Unknown caller"}
+            </h2>
+            <p>
+              {connecting
+                ? "Generating the incident and caller."
+                : guided
+                  ? "A scenario briefing and question prompts will be available during the call."
+                  : "The incident and caller are revealed through the conversation. No briefing, no prepared script."}
+            </p>
+            <div
+              className="session-scope"
+              aria-label="Current optional preferences"
+            >
+              <span>
+                {scope.domains.length
+                  ? `${scope.domains.length} incident ${scope.domains.length === 1 ? "type" : "types"}`
+                  : "Any incident"}
+              </span>
+              <span>{difficulty}</span>
+              <span>{scope.language === "hi" ? "Hindi" : "English"}</span>
+            </div>
+          </div>
+          <div className="session-action">
+            <div className="training-line" aria-hidden="true">
+              <span>112</span>
+              <small>TRAINING</small>
+            </div>
+            <button
+              className="button primary start-call"
+              disabled={connecting || !status}
+              onClick={onStart}
+            >
+              {connecting ? (
+                <LoaderCircle className="spin" size={17} />
+              ) : (
+                <Phone size={17} />
+              )}
+              {connecting ? "Starting call…" : "Start call"}
+              {!connecting && <ArrowUpRight size={16} />}
+            </button>
+            <span className="session-device-note">
+              Browser audio · No phone number
+            </span>
+          </div>
         </div>
-        <h2>
-          {connecting
-            ? "A voice on the other end…"
-            : "Show up. We’ll bring the unexpected."}
-        </h2>
-        <p className="console-description">
-          {scope.mode === "guided"
-            ? "A little context before the conversation begins."
-            : "A fresh situation. A human personality. No script to follow."}
-        </p>
-        <button
-          className="button primary start-call"
-          disabled={connecting || !status}
-          onClick={onStart}
-        >
-          {connecting ? (
-            <LoaderCircle size={19} className="spin" />
-          ) : (
-            <Phone size={18} />
-          )}
-          {connecting ? "Starting your call…" : "Start call"}
-          {!connecting && <ArrowRight size={18} />}
-        </button>
-        <p className="console-caption">
-          <Headphones size={13} />
-          Headphones help. Being perfect doesn’t.
-        </p>
-        <div className="console-customize">
+        <div className="console-toolbar">
           <button
-            className={`customize-toggle ${expanded ? "expanded" : ""}`}
+            className="customize-toggle"
             aria-expanded={expanded}
             aria-controls="customize-panel"
-            onClick={() => setExpanded(!expanded)}
             disabled={connecting}
+            onClick={() => setExpanded(!expanded)}
           >
             <SlidersHorizontal size={15} />
-            {count
-              ? `${count} optional ${count === 1 ? "preference" : "preferences"}`
-              : "Want to shape the call?"}
+            {count ? `Call preferences · ${count}` : "Customize call"}
             <span>Optional</span>
             <ChevronDown size={14} />
           </button>
+          <span className="provider-credit">
+            Voice by{" "}
+            <a href="https://fish.audio/" target="_blank" rel="noreferrer">
+              Fish Audio
+              <ArrowUpRight size={10} />
+            </a>
+          </span>
         </div>
         {expanded && (
           <div className="customize-panel" id="customize-panel">
             <div className="customize-heading">
               <div>
-                <h3>A little direction. Or none at all.</h3>
-                <p>Leave anything blank and we’ll choose for you.</p>
+                <h3>Call preferences</h3>
+                <p>Leave these open for a fully random scenario.</p>
               </div>
               <button
                 className="text-button"
@@ -137,20 +156,17 @@ export default function PracticeRoom({
                   })
                 }
               >
-                <RotateCcw size={13} />
                 Reset
               </button>
             </div>
             <fieldset>
-              <legend className="field-label">
-                Incident interests <span>Any, when none selected</span>
-              </legend>
+              <legend className="field-label">Incident types</legend>
               <div className="scope-chips">
                 {domains.map((domain) => (
                   <button
                     key={domain.id}
-                    aria-pressed={scope.domains.includes(domain.id)}
                     className={`scope-chip ${scope.domains.includes(domain.id) ? "selected" : ""}`}
+                    aria-pressed={scope.domains.includes(domain.id)}
                     onClick={() => toggle(domain.id)}
                   >
                     {domain.name}
@@ -172,7 +188,7 @@ export default function PracticeRoom({
                     value={scope.difficulty}
                     onChange={(e) => change("difficulty", e.target.value)}
                   >
-                    <option value="">Surprise me</option>
+                    <option value="">Any difficulty</option>
                     {difficulties.map((d) => (
                       <option key={d.id} value={d.id}>
                         {d.name}
@@ -200,17 +216,16 @@ export default function PracticeRoom({
             </div>
             <label className="guided-switch">
               <span>
-                <BookOpen size={18} />
-                <span>
-                  <strong>A little guidance</strong>
-                  <small>See a briefing and question prompts.</small>
-                </span>
+                <strong>Guided mode</strong>
+                <small>
+                  Show a briefing and question prompts during the call.
+                </small>
               </span>
               <input
                 type="checkbox"
                 role="switch"
                 aria-label="Guided practice"
-                checked={scope.mode === "guided"}
+                checked={guided}
                 onChange={(e) =>
                   change("mode", e.target.checked ? "guided" : "random")
                 }
@@ -220,46 +235,47 @@ export default function PracticeRoom({
           </div>
         )}
       </section>
-      <div className="practice-understory">
-        <span>
-          <ShieldCheck size={13} />
-          Fictional calls. Real room to grow.
-        </span>
-        <span>
-          Voices by{" "}
-          <a href="https://fish.audio/" target="_blank" rel="noreferrer">
-            Fish Audio
-            <ArrowUpRight size={11} />
-          </a>
-        </span>
-      </div>
-      <section className="debrief-peek">
-        <div className="debrief-peek-icon">
-          <BookOpen size={21} />
+
+      <section className="recent-sessions" aria-labelledby="recent-title">
+        <div className="recent-heading">
+          <h2 id="recent-title">Recent sessions</h2>
+          <button className="text-button" onClick={onHistory}>
+            View all
+            <ArrowRight size={14} />
+          </button>
         </div>
-        <div>
-          <span className="eyebrow">
-            {latest ? "Keep the conversation going" : "After the call"}
-          </span>
-          <h3>
-            {latest
-              ? "Your latest call, with a little perspective."
-              : "The best part is what you take away."}
-          </h3>
-          <p>
-            {latest
-              ? latest.scenario?.title || "Your latest conversation"
-              : "A thoughtful debrief. The moments that mattered. One thing to try next."}
-          </p>
-        </div>
-        <button
-          className="peek-link"
-          onClick={() => onOpen(latest || exampleSession)}
-        >
-          {latest ? "Open debrief" : "See an example"}
-          <ArrowUpRight size={17} />
-        </button>
+        {latest ? (
+          <button className="recent-session" onClick={() => onOpen(latest)}>
+            <div>
+              <strong>{latest.scenario?.title || "Practice session"}</strong>
+              <span>
+                {latest.kind === "sample"
+                  ? "Text sample"
+                  : latest.kind === "voice"
+                    ? "Voice call"
+                    : "Text practice"}{" "}
+                · {latest.setup.mode === "guided" ? "Guided" : "Random"}
+              </span>
+            </div>
+            <time>{formatTime(latest.duration)}</time>
+            <ArrowUpRight size={16} />
+          </button>
+        ) : (
+          <div className="recent-empty">
+            <p>No completed calls yet.</p>
+            <span>
+              Your transcript and debrief will appear here after a session.
+            </span>
+          </div>
+        )}
       </section>
+      <div className="example-link-row">
+        <span>Want to see the report format?</span>
+        <button className="text-button" onClick={() => onOpen(exampleSession)}>
+          Example debrief
+          <ArrowUpRight size={13} />
+        </button>
+      </div>
     </div>
   );
 }

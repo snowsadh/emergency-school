@@ -33,9 +33,8 @@ export default function SessionHistory({
     <div className="history-page">
       <header className="page-heading history-heading">
         <div>
-          <span className="eyebrow">Your practice, kept close</span>
-          <h1>Call journal</h1>
-          <p>A place to look back, notice something, and try again.</p>
+          <h1>Sessions</h1>
+          <p>Completed calls and their debriefs.</p>
         </div>
         <button className="button primary" onClick={onPractice}>
           New call <ArrowRight size={16} />
@@ -90,11 +89,8 @@ export default function SessionHistory({
           <div className="journal-empty-mark">
             <FolderOpen size={28} strokeWidth={1.5} />
           </div>
-          <h2>Your first call is a fresh page.</h2>
-          <p>
-            Finish a practice call and its conversation and debrief will appear
-            here. Nothing to fill in first.
-          </p>
+          <h2>No completed calls</h2>
+          <p>Your transcript and debrief will appear here after a call.</p>
           <button className="button secondary" onClick={onPractice}>
             Start a random call <ArrowRight size={16} />
           </button>
@@ -106,9 +102,8 @@ export default function SessionHistory({
           <BookOpen size={20} />
         </div>
         <div>
-          <span className="eyebrow">A look inside</span>
-          <h2>See what a debrief feels like.</h2>
-          <p>An authored example. Separate from your practice history.</p>
+          <h2>Example debrief</h2>
+          <p>An authored report with transcript-linked feedback.</p>
         </div>
         <button className="text-button" onClick={() => onOpen(exampleSession)}>
           Open example <ArrowRight size={16} />
@@ -150,8 +145,8 @@ export default function SessionHistory({
         </div>
       )}
       <p className="journal-storage-note">
-        Your journal is stored on this device, not in an account. Clearing
-        browser storage also clears these sessions.
+        Sessions are saved on this device. Clearing browser storage deletes
+        these sessions.
       </p>
     </div>
   );

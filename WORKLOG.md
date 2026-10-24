@@ -11,7 +11,7 @@ Last updated: 24 October 2026.
 - OpenAI generates immutable incident facts, caller personality, the opening, and subsequent replies. Replies include Fish performance directions such as `[anxious, hesitant]`.
 - Fish Drama 3 speaks the generated replies. OpenAI transcribes the trainee's recorded turns.
 - Ending a call opens a transcript-backed debrief. No fabricated grades, validated-readiness claims, or frozen scoring weights.
-- Visual reference: Fish Audio, with its clutter removed. Use Onest typography, warm-neutral surfaces, near-black controls, and straightforward product copy. The earlier lavender/waveform design was rejected by the founder and is being replaced.
+- Visual inspiration: Fish Audio's confident typography, neutral surfaces, and compact controls—not a page or branding clone. The app now uses Onest, warm neutrals, near-black actions, and literal training copy. The earlier lavender/pulse-branded design was rejected and has been replaced.
 
 ## Implementation plan and progress
 
@@ -29,19 +29,21 @@ Last updated: 24 October 2026.
 
 ## Work completed / decisions changed
 
-### UI revision — Fish Audio reference (in progress)
+### UI revision — Fish Audio inspiration (implemented, pending founder review)
 
 The founder rejected the first UI's pulse branding, marketing slogans, and generic voice-AI styling. Inspected the actual Fish Audio public site and app in Chrome, including computed typography: Onest, warm neutral backgrounds, compact navigation, white tool surfaces, and near-black pill buttons. Reference screenshots are kept in ignored `artifacts/`, not committed as product assets.
 
 Plan:
 
 - [x] Inspect the actual reference, rather than infer its design from memory.
-- [ ] Replace pulse branding and promotional copy with a typographic identity and literal training controls.
-- [ ] Rebuild the practice screen around a compact session surface and one Start call action; keep customization optional.
-- [ ] Apply the same neutral design to calls, debriefs, history, and activity.
-- [ ] Review desktop/mobile screenshots and rerun behavior/audio checks before checkpoint commits.
+- [x] Replace pulse branding and promotional copy with a typographic identity and literal training controls.
+- [x] Rebuild the practice screen around a compact session surface and one Start call action; keep customization optional.
+- [x] Apply the same neutral design to calls, debriefs, history, and activity.
+- [x] Review desktop/mobile screenshots and rerun behavior/audio checks before checkpoint commits.
 
-No voice-provider or conversation logic changes are intended in this revision.
+Built an original training-session surface with an unknown caller, current optional scope, and a 112 training identifier. Removed the oversized marketing hero, pulse logo, motivational slogans, fake profile block, and decorative sample waveform. Waveforms remain only in actual voice mode. Supporting screens use direct headings: Sessions, Overview, Key moments, Session notes, and Practice record. No Fish artwork, logo, or page structure was copied.
+
+Verification after the revision: `npm run test:browser`, `npm test` (**14/14**), and `npm run build` passed. Browser coverage includes random/guided samples, optional Hindi scope, evidence navigation, notes/export/history persistence, 375/390/768/1440px layouts, and native microphone/playback with mocked providers. Adjusted tablet report layout for reading width and made responsive assertions wait for the renderer's media-query repaint. No voice-provider, call lifecycle, or conversation logic changed. No paid provider calls were made.
 
 ### Initial scaffold
 

@@ -1,16 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  Activity,
   ArrowUpRight,
-  AudioLines,
   ChartNoAxesCombined,
-  ChevronRight,
   CircleHelp,
   FileText,
   Headphones,
   Settings2,
-  ShieldCheck,
-  UserRound,
   X,
 } from "lucide-react";
 import { validateSetup } from "../shared/scenarios.mjs";
@@ -23,9 +18,19 @@ import SessionHistory from "./components/SessionHistory.jsx";
 import Progress from "./components/Progress.jsx";
 
 const navigation = [
-  { id: "practice", title: "Practice room", icon: Headphones },
-  { id: "history", title: "Your debriefs", icon: FileText },
-  { id: "progress", title: "Practice record", icon: ChartNoAxesCombined },
+  {
+    id: "practice",
+    title: "Practice room",
+    label: "Practice",
+    icon: Headphones,
+  },
+  { id: "history", title: "Your debriefs", label: "Sessions", icon: FileText },
+  {
+    id: "progress",
+    title: "Practice record",
+    label: "Activity",
+    icon: ChartNoAxesCombined,
+  },
 ];
 
 function Modal({ title, onClose, children }) {
@@ -138,19 +143,14 @@ export default function App() {
           onClick={() => navigate("practice")}
           disabled={locked}
         >
-          <span className="brand-mark">
-            <Activity size={25} strokeWidth={2.1} />
-          </span>
-          <span>
-            emergency
-            <span>
-              school<i>.</i>
-            </span>
+          <span className="brand-name">
+            Emergency
+            <br />
+            School<span className="brand-tag">112 call training</span>
           </span>
         </button>
-        <div className="sidebar-nav-label">YOUR SPACE</div>
         <nav aria-label="Main navigation">
-          {navigation.map(({ id, title, icon: Icon }) => (
+          {navigation.map(({ id, title, label, icon: Icon }) => (
             <button
               className={`nav-item ${activeNav === id ? "selected" : ""}`}
               aria-label={title}
@@ -160,7 +160,7 @@ export default function App() {
               key={id}
             >
               <Icon size={18} />
-              <span>{title}</span>
+              <span>{label}</span>
               {id === "history" && sessions.length > 0 && (
                 <small>{sessions.length}</small>
               )}
@@ -168,14 +168,6 @@ export default function App() {
           ))}
         </nav>
         <div className="sidebar-bottom">
-          <div className="sidebar-thought">
-            <AudioLines size={24} />
-            <p>
-              Practise the unexpected.
-              <br />
-              <span>Become the steady.</span>
-            </p>
-          </div>
           <button
             className="nav-item quiet"
             aria-label="How it works"
@@ -195,29 +187,17 @@ export default function App() {
             <Settings2 size={17} />
             Voice setup
           </button>
-          <div className="local-profile">
-            <span>
-              <UserRound size={17} />
-            </span>
-            <div>
-              <strong>Your workspace</strong>
-              <small>Saved on this device</small>
-            </div>
-          </div>
+          <p className="local-storage-label">Sessions saved on this device</p>
         </div>
       </aside>
       <div className="main-shell">
         <header className="topbar">
-          <span className="breadcrumb">
-            Your workspace
-            <ChevronRight size={13} />
-            <strong>
-              {screen === "call"
-                ? "On the line"
-                : screen === "report"
-                  ? "Session debrief"
-                  : navigation.find((n) => n.id === screen)?.title}
-            </strong>
+          <span className="topbar-title">
+            {screen === "call"
+              ? "Current call"
+              : screen === "report"
+                ? "Session debrief"
+                : navigation.find((n) => n.id === screen)?.label}
           </span>
           <button
             className={`voice-status ${status?.voiceConfigured ? "connected" : ""}`}
@@ -232,7 +212,6 @@ export default function App() {
                 : status.openaiConfigured
                   ? "Text practice ready"
                   : "Preview mode"}
-            <ChevronRight size={12} />
           </button>
         </header>
         <main id="main-content" className="page-content">
@@ -260,6 +239,7 @@ export default function App() {
               onStart={start}
               onOpen={openReport}
               latest={sessions[0]}
+              onHistory={() => navigate("history")}
             />
           )}
           {screen === "call" && practice.session && (
@@ -302,23 +282,16 @@ export default function App() {
           )}
           {screen !== "call" && (
             <footer className="page-footer">
-              <span>
-                <ShieldCheck size={13} />
-                For training. Never a live emergency service.
-              </span>
-              <span>One conversation at a time.</span>
+              <span>Training only. No real emergency calls or dispatch.</span>
             </footer>
           )}
         </main>
       </div>
       {modal === "setup" && (
-        <Modal title="A voice on the other end." onClose={() => setModal(null)}>
+        <Modal title="Voice setup" onClose={() => setModal(null)}>
           <div className="setup-service">
-            <span>
-              <AudioLines size={22} />
-            </span>
             <div>
-              <h3>OpenAI thinks. Fish speaks.</h3>
+              <h3>Connect OpenAI and Fish Audio</h3>
               <p>
                 {status?.voiceConfigured
                   ? "Both keys are configured. Live access and audio quality still need to be tested with a call."
@@ -340,7 +313,6 @@ export default function App() {
             </>
           )}
           <div className="privacy-note">
-            <ShieldCheck size={17} />
             <p>
               Voice turns are sent to OpenAI for transcription. Fish receives
               the generated caller dialogue. This app does not store microphone
@@ -358,13 +330,10 @@ export default function App() {
         </Modal>
       )}
       {modal === "help" && (
-        <Modal
-          title="Just you and the next caller."
-          onClose={() => setModal(null)}
-        >
+        <Modal title="How practice works" onClose={() => setModal(null)}>
           <div className="help-content">
             <section>
-              <h3>Start with the unknown.</h3>
+              <h3>Start a random call</h3>
               <p>
                 Press Start call. OpenAI creates a fictional incident and
                 caller; Fish gives their words a voice. No setup questions, no
@@ -372,7 +341,7 @@ export default function App() {
               </p>
             </section>
             <section>
-              <h3>Shape it only if you want to.</h3>
+              <h3>Optional preferences</h3>
               <p>
                 Optional incident interests, difficulty, and language narrow the
                 next call. Guided practice adds a briefing and conversation
@@ -380,7 +349,7 @@ export default function App() {
               </p>
             </section>
             <section>
-              <h3>Keep something from the conversation.</h3>
+              <h3>Review the call</h3>
               <p>
                 End the call to see your transcript, evidence-linked feedback,
                 and a next-practice focus. Save a fieldnote for next time.

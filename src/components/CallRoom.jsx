@@ -69,13 +69,13 @@ export default function CallRoom({ practice }) {
             {session.kind === "sample"
               ? "Scripted text sample"
               : voice
-                ? "Your practice call"
-                : "AI text rehearsal"}
+                ? "Practice session"
+                : "Generated text practice"}
           </span>
           <h1>
             {guided
               ? session.briefing?.title || session.scenario?.title
-              : "You’re on the line."}
+              : "Random call"}
           </h1>
         </div>
         <span className="pill">
@@ -98,7 +98,9 @@ export default function CallRoom({ practice }) {
       )}
       <div className="call-grid">
         <div className="call-primary">
-          <section className="call-stage">
+          <section
+            className={`call-stage ${!voice && !ending ? "text-stage" : ""}`}
+          >
             <span className="call-state">
               <span
                 className={`state-dot ${mode === "thinking" ? "thinking" : ""}`}
@@ -117,31 +119,23 @@ export default function CallRoom({ practice }) {
                     ? "Caller is replying"
                     : "Your turn"}
             </span>
-            <Waveform
-              large
-              active={voice && !muted && mode !== "thinking" && !ending}
-              level={level}
-            />
-            <h2>
-              {ending
-                ? "A moment to look back."
-                : voice
-                  ? mode === "speaking"
-                    ? "Listen for the person."
-                    : mode === "thinking"
-                      ? "A moment on the other end…"
-                      : muted
-                        ? "Take the space you need."
-                        : "One question at a time."
-                  : "What would you ask next?"}
-            </h2>
-            <p>
-              {ending
-                ? "Keeping your words. Finding the moments worth revisiting."
-                : voice
-                  ? "Your microphone pauses while the caller speaks."
-                  : "Listen to what they know. Find out what you need."}
-            </p>
+            {voice && (
+              <Waveform
+                large
+                active={voice && !muted && mode !== "thinking" && !ending}
+                level={level}
+              />
+            )}
+            {ending && <h2>Call complete</h2>}
+            {(voice || ending) && (
+              <p>
+                {ending
+                  ? "Saving the transcript and preparing your debrief."
+                  : voice
+                    ? "Your microphone pauses while the caller speaks."
+                    : "Type your response to continue the call."}
+              </p>
+            )}
             <div className="call-buttons">
               {voice && (
                 <button
@@ -219,8 +213,8 @@ export default function CallRoom({ practice }) {
               <div className="transcript-hidden">
                 <Headphones size={20} />
                 <p>
-                  Stay with the caller.
-                  <span>The transcript is here when you need it.</span>
+                  Transcript hidden
+                  <span>Show it at any point during the call.</span>
                 </p>
               </div>
             )}
@@ -249,8 +243,8 @@ export default function CallRoom({ practice }) {
         {guided && (
           <aside className="call-guide">
             <BookOpen size={23} />
-            <span className="eyebrow">A little context</span>
-            <h2>A place to begin.</h2>
+            <span className="eyebrow">Guided mode</span>
+            <h2>Scenario briefing</h2>
             <p>{session.briefing?.brief || session.scenario?.brief}</p>
             <div className="guide-questions">
               <span className="field-label">Questions to explore</span>
