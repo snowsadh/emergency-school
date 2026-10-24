@@ -62,9 +62,19 @@ npm run build
 npm run test:browser
 ```
 
-The browser check requires the dev server running and Google Chrome at `/usr/bin/google-chrome-stable`. Override `CHROME_PATH` or `TEST_URL` if needed. It checks random/guided sample flows, optional preferences, report evidence, note/history persistence, exports, and responsive layouts. A second browser check exercises native microphone access and audio playback using a fake input device and mocked provider responses. Screenshots go to the ignored `artifacts/` directory.
+The browser check requires the dev server running and Google Chrome at `/usr/bin/google-chrome-stable`. Override `CHROME_PATH` or `TEST_URL` if needed. It checks random/guided sample flows, optional preferences, report evidence, note/history persistence, exports, and responsive layouts. The sample suite blocks provider routes even when the server has real keys. A second browser check exercises native microphone access and audio playback using a fake input device and mocked provider responses. Screenshots go to the ignored `artifacts/` directory.
 
-Backend and audio tests use mocked providers and browser audio objects. Passing these tests does **not** verify live model quality, speech recognition, latency, or emotional delivery. No paid provider requests have been made during development without credentials.
+These regular tests use mocked providers; passing them does **not** verify live model quality, speech recognition, latency, or emotional delivery.
+
+An optional live check spends API credit. With the server running and both keys loaded from `.env`, run:
+
+```sh
+node --env-file=.env tests/live-smoke.mjs --live
+```
+
+This also requires Chrome and `ffmpeg`. It generates a synthetic spoken question, feeds it through Chrome's fake microphone, and uses real OpenAI and Fish requests for a complete call and debrief. It checks transcription, caller audio decoding/playback, transcript-linked feedback, and microphone release. The `--live` flag is mandatory; this script never runs as part of the regular test commands. Its summary, screenshot, and fictional caller audio are saved under ignored `artifacts/`; temporary microphone files are removed.
+
+The live check passed on 24 October 2026 for one unscoped English call: the question was transcribed exactly, two caller turns played, and the debrief cited the trainee's actual turn. This is a short integration check with synthetic speech, not a human listening test or a validation of training effectiveness. See [WORKLOG.md](WORKLOG.md) for measured timings and remaining limits.
 
 To serve the production build locally:
 

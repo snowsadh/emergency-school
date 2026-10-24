@@ -26,6 +26,7 @@ Last updated: 24 October 2026.
 - [x] Apply and review desktop/mobile styling and keyboard accessibility.
 - [x] Add runnable backend and browser checks; run tests and a production build.
 - [x] Update setup instructions and reconcile earlier research with the final scope.
+- [x] Load local credentials and verify a complete call against the real providers with a synthetic microphone.
 
 ## Work completed / decisions changed
 
@@ -55,7 +56,7 @@ Random now has product priority, and every practice preference is optional. The 
 
 ### Current build state
 
-The first complete local prototype is implemented. Desktop and mobile screenshots have been inspected; automated sample and real-browser audio flows pass against both the development server and production build, with model responses mocked. Source has been consistently formatted and setup documentation is complete. No live provider request has been made.
+The first complete local prototype is implemented. Desktop and mobile screenshots have been inspected; automated sample and real-browser audio flows pass against both the development server and production build, with model responses mocked. A separate, explicitly opted-in live check has now passed against the real OpenAI and Fish services using a synthetic microphone. No model weights were changed; this checkpoint verifies the existing integrations rather than replacing them.
 
 ## Verified checkpoints
 
@@ -67,18 +68,23 @@ The first complete local prototype is implemented. Desktop and mobile screenshot
 6. Added a separate real-Chrome audio check using a fake microphone and local WAV fixture, with model/provider responses mocked. Browser permissions, native audio decoding/playback, microphone mute, typed fallback, playback acknowledgement, and AI-debrief rendering passed. This is an integration test, not a listening-quality test.
 7. `c1baf18` — Consistent core-source formatting and removal of the obsolete hosted-agent prompt / unused lexical-scorecard helpers.
 8. `ac57acf` — One-click random practice, optional customization and guided mode, browser call lifecycle, responsive visual system, and repeatable browser checks. `TEST_URL=http://127.0.0.1:5174 npm run test:browser` also passed against the production server, not only Vite development mode.
+9. Live integration, 24 October 2026 — With both local keys configured, `node --env-file=.env tests/live-smoke.mjs --live` passed a real unscoped English call in Chrome. OpenAI generated "Scooter Hit Near School Gate"; Fish produced the opening and reply; the microphone question "Where exactly are you right now?" was transcribed exactly; the resulting debrief cited the actual trainee turn. Both caller audio buffers decoded and finished playing, and all microphone tracks were released on call end. No browser exceptions were recorded. The debrief screenshot was inspected.
+
+   Observed timings for this one run: call creation including opening speech **4.774 seconds**; start through opening playback, synthetic question capture, reply generation and reply playback **26.413 seconds**; debrief **2.407 seconds**. The 26-second figure includes playback and silence detection, not just provider latency. There were three transcript turns and one evidence-linked review moment. Artifacts are local and ignored: `artifacts/live-smoke-summary.json`, `artifacts/live-debrief-desktop.png`, and `artifacts/live-caller-opening.mp3`.
+10. `ce6eeae` — Prevent the sample browser suite from contacting paid routes when real credentials are configured. After live validation, `npm test` (**14/14**), `npm run test:browser` (sample and mocked native voice flows), and `npm run build` all passed. The separate live script passes syntax checking and refuses to run without `--live`; that refusal was tested without provider requests. Local credentials and live artifacts remain Git-ignored and untracked. No production integration changes were needed for the live pass.
 
 ## Verification and external dependencies
 
-- No OpenAI or Fish credentials are present in the current environment. No paid model requests have been made.
-- Live model quality, speech recognition, latency, Hindi pronunciation, and Fish emotional delivery are **not yet verified**.
+- Both credentials are present in the Git-ignored local `.env`; the development server was restarted to load them. Status exposes configuration booleans only. Keys are not recorded in this log or committed.
+- One real-provider English call passed using synthetic microphone speech. This establishes connectivity and a short functional round trip, not broad recognition accuracy, sustained factual consistency, or voice quality. Human speech, Hindi pronunciation, emotional delivery, and longer scenarios still need listening and usage tests.
+- Regular browser tests are kept offline even when real credentials are configured: the sample suite mocks status and blocks every other API route. The paid live script requires a separate `--live` opt-in and is excluded from regular test commands.
 - Official OpenAI Structured Outputs / speech-transcription docs and Fish Drama 3 / speech-endpoint docs have been checked. The TinyFish research helper returned an authentication error, so official documentation was fetched directly.
 - Current implementation targets a local, single-process prototype. Public deployment needs authentication and spending controls; active calls are not durable across server restarts.
 
-## Next handoff / remaining live validation
+## Next handoff / remaining validation
 
-Latest connection check: the running server reports both OpenAI and Fish unconfigured. Neither key was present in the process environment, and `.env` did not exist. Created a blank, Git-ignored `.env` for local credential entry. Live verification is waiting for these two keys; no provider calls have been made and no live pass is claimed.
+The real-provider smoke test is complete. Both supplied keys worked for their configured services. The test used a synthetic English microphone question, not a recording of a human trainee; no claim of "perfect" recognition or realistic emotional delivery follows from this check.
 
-The development app is available at `http://127.0.0.1:5173`. Add `OPENAI_API_KEY` and `FISH_API_KEY` to the ignored `.env` file, restart, and test a short English call before Hindi and more difficult callers. Check recognition fidelity, factual consistency, emotional delivery, latency, and how the debrief handles ambiguous or short calls. API keys belong only in `.env`, never in this log or client code.
+The development app is available at `http://127.0.0.1:5173`. Refresh the existing tab, press Start call, and allow microphone access. Next, test a real spoken English conversation before Hindi and more difficult callers. Check recognition fidelity, factual consistency, emotional delivery, latency, and how the debrief handles ambiguous or short calls. API keys belong only in `.env`, never in this log or client code.
 
 Known first-version limits: microphone capture pauses while the caller speaks (no natural interruptions yet); turn boundaries use a simple silence threshold; active server sessions are in-memory; feedback is generated for reflection rather than validated grading. Public deployment and a final scoring rubric are outside this checkpoint.
