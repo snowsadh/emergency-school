@@ -16,10 +16,10 @@ export const assessmentRubric = Object.freeze(
       weight: 20,
       critical: true,
       expected:
-        "Establish a usable incident location from the information the caller can provide.",
-      met: "A specific location is elicited or acknowledged, with enough available detail to distinguish the incident site.",
+        "Establish a geographic incident location that identifies the site, not only the caller's position within it.",
+      met: "The trainee elicits or acknowledges geographic details that identify the incident site, such as an address or a distinguishing building/road/landmark with enough locality context to match the case. Cite both the trainee turn and the heard caller information; being inside a flat or by its door is not a usable geographic location.",
       partial:
-        "The trainee establishes an area but leaves a resolvable address, access point, or landmark ambiguity.",
+        "A location question is attempted, but the answer gives only a relative position, a broad area, or incomplete geographic detail despite more usable information being available from the caller.",
       missed:
         "An explicit location-related opportunity is passed over, or the trainee proceeds using a demonstrably wrong location.",
       nextAction:
@@ -32,7 +32,7 @@ export const assessmentRubric = Object.freeze(
       critical: false,
       expected:
         "Check the location rather than treating an ambiguous first answer as confirmed.",
-      met: "The trainee checks a stated location with a read-back or a targeted clarification that resolves its ambiguity.",
+      met: "The trainee checks the geographic incident location with a read-back or targeted clarification that resolves its material ambiguity; repeating only an indoor position does not establish this.",
       partial:
         "A location check is attempted but an available, material ambiguity remains unresolved.",
       missed:
@@ -111,7 +111,7 @@ export const assessmentRubric = Object.freeze(
       partial:
         "The trainee starts a contact check but does not establish the simulated reconnect detail or arrangement.",
       missed:
-        "A disconnect concern or explicit call-closing opportunity occurs and the trainee proceeds without a simulated reconnect arrangement.",
+        "An explicit disconnect/reconnect concern or spoken call-closing opportunity occurs and the trainee proceeds without a simulated reconnect arrangement. Panic, urgency, an unstable situation, or the interface's End call action alone are not such an opportunity.",
       nextAction:
         "Ask to confirm the simulated callback detail, or state what the fictional caller should do if disconnected.",
     },
@@ -122,9 +122,9 @@ export const assessmentRubric = Object.freeze(
       critical: false,
       expected:
         "Check a material non-location detail and avoid repeating assumptions as confirmed facts.",
-      met: "The trainee accurately confirms or resolves a material incident detail beyond the location.",
+      met: "The trainee accurately checks a specific material non-location fact, such as the number of affected people, observed smoke versus flames, or what actually happened. Name that fact and cite the trainee's actual check; a location-only read-back or merely saying 'location and situation' earns no credit here.",
       partial:
-        "A relevant confirmation is attempted but remains incomplete or does not resolve a disclosed discrepancy.",
+        "The trainee attempts to check a specific non-location fact, but the check remains incomplete or does not resolve a disclosed discrepancy. A location-only check is not a partial attempt at this separate criterion.",
       missed:
         "The trainee repeats a contradicted material fact or explicitly proceeds despite a disclosed factual discrepancy.",
       nextAction:
@@ -150,6 +150,12 @@ export const assessmentRubric = Object.freeze(
 
 const statuses = new Set(["met", "partial", "missed", "not_assessable"]);
 const multipliers = { met: 1, partial: 0.5, missed: 0 };
+const informationAcquisition = new Set([
+  "location",
+  "immediate_exposure",
+  "people_at_risk",
+  "incident_picture",
+]);
 
 function usableText(value, maxLength = 1200) {
   return typeof value === "string" && value.trim() && value.length <= maxLength
@@ -199,6 +205,11 @@ export function calculateAssessment(judgements, transcript = []) {
         allIds.length <= 20 &&
         allIds.every((id) => typeof id === "string" && evidence.has(id));
       const traineeIds = ids.filter((id) => evidence.get(id)?.role === "user");
+      const callerIds = ids.filter((id) => evidence.get(id)?.role === "agent");
+      const acquisitionGrounded =
+        judgement.status !== "met" ||
+        !informationAcquisition.has(criterion.id) ||
+        callerIds.length > 0;
       const reason = usableText(judgement.rationale);
       const opportunityFollowed = opportunities.some((id) => {
         const opportunity = evidence.get(id);
@@ -217,6 +228,7 @@ export function calculateAssessment(judgements, transcript = []) {
       } else if (
         validIds &&
         traineeIds.length > 0 &&
+        acquisitionGrounded &&
         reason &&
         (judgement.status !== "missed" || opportunityFollowed)
       ) {
@@ -224,8 +236,9 @@ export function calculateAssessment(judgements, transcript = []) {
         evidenceIds = allIds;
         rationale = reason;
       } else {
-        rationale =
-          "The proposed judgement lacked valid trainee evidence or a grounded opportunity and was excluded.";
+        rationale = !acquisitionGrounded
+          ? "Full credit for obtaining information needs both a trainee turn and heard caller information; the proposed judgement was excluded."
+          : "The proposed judgement lacked valid trainee evidence or a grounded opportunity and was excluded.";
       }
     }
 

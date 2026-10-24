@@ -66,7 +66,7 @@ function judgement(id, status = "met", overrides = {}) {
   return {
     id,
     status,
-    evidenceIds: ["u1"],
+    evidenceIds: ["u1", "a2"],
     opportunityIds: [],
     rationale: "A specific question is recorded in the transcript.",
     ...overrides,
@@ -111,12 +111,12 @@ test("canonical weights compute half credit and exclude unassessable criteria", 
     result.criticalFindings.map((item) => item.criterionId),
     ["immediate_exposure"],
   );
-  assert.deepEqual(result.criticalFindings[0].evidenceIds, ["u1", "a1"]);
+  assert.deepEqual(result.criticalFindings[0].evidenceIds, ["u1", "a2", "a1"]);
 });
 
 test("short calls and low coverage withhold totals rather than report a misleading perfect score", () => {
   const allMet = assessmentRubric.map((criterion) => judgement(criterion.id));
-  const short = calculateAssessment(allMet, transcript.slice(0, 2));
+  const short = calculateAssessment(allMet, transcript.slice(0, 3));
   assert.equal(short.score, null);
   assert.equal(short.earned, 100);
   assert.equal(short.possible, 100);
@@ -218,6 +218,46 @@ test("unheard or unfinished evidence is excluded and empty sessions are not fail
   assert.ok(empty.criteria.every((item) => item.status === "not_assessable"));
 });
 
+test("information-acquisition full credit requires both trainee and heard caller evidence", () => {
+  for (const id of [
+    "location",
+    "immediate_exposure",
+    "people_at_risk",
+    "incident_picture",
+  ]) {
+    const traineeOnly = calculateAssessment(
+      [judgement(id, "met", { evidenceIds: ["u1"] })],
+      transcript,
+    );
+    assert.equal(
+      traineeOnly.criteria.find((item) => item.id === id).status,
+      "not_assessable",
+    );
+    assert.equal(traineeOnly.possible, 0);
+
+    const paired = calculateAssessment([judgement(id)], transcript);
+    assert.equal(paired.criteria.find((item) => item.id === id).status, "met");
+    const unheard = calculateAssessment(
+      [judgement(id)],
+      transcript.map((turn) =>
+        turn.segmentId === "a2" ? { ...turn, playbackConfirmed: false } : turn,
+      ),
+    );
+    assert.equal(
+      unheard.criteria.find((item) => item.id === id).status,
+      "not_assessable",
+    );
+    const attempt = calculateAssessment(
+      [judgement(id, "partial", { evidenceIds: ["u1"] })],
+      transcript,
+    );
+    assert.equal(
+      attempt.criteria.find((item) => item.id === id).status,
+      "partial",
+    );
+  }
+});
+
 test("review integration requests grounded judgements while code owns weights and totals", async () => {
   let request;
   const raw = {
@@ -261,6 +301,16 @@ test("review integration requests grounded judgements while code owns weights an
   assert.match(request.instructions, /NOT an official APCO assessment/);
   assert.match(request.instructions, /playbackConfirmed=false/);
   assert.match(request.instructions, /opportunityIds/);
+  assert.match(
+    request.instructions,
+    /Geographic incident location versus caller position/,
+  );
+  assert.match(request.instructions, /location is partial.*NEVER met/);
+  assert.match(
+    request.instructions,
+    /unstable incident alone does NOT make reconnect_plan missed/,
+  );
+  assert.match(request.instructions, /must NOT earn factual_confirmation/);
   assert.match(
     request.instructions,
     /never request or reward a real phone number/i,

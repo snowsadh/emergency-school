@@ -195,6 +195,33 @@ try {
   assert.equal(await page.locator(".session-row").count(), 2);
 
   await page.getByRole("button", { name: "Open example" }).click();
+  assert.equal(
+    await page.locator(".assessment-score strong").textContent(),
+    "78",
+  );
+  assert.equal(await page.locator(".criterion-row").count(), 9);
+  assert.match(
+    await page.locator(".assessment-critical").textContent(),
+    /Immediate exposure/,
+  );
+  const criterion = page.locator(".criterion-row").first();
+  await criterion.locator("summary").click();
+  await criterion.locator(".assessment-evidence-quote").first().click();
+  await page.locator(".transcript-selected").waitFor();
+  assert.match(
+    await page.locator(".transcript-selected").textContent(),
+    /Which city is that in/,
+  );
+  await criterion.locator("summary").click();
+  const scoredDownloadReady = page.waitForEvent("download");
+  await page
+    .getByRole("button", { name: "Export report", exact: true })
+    .click();
+  const scoredDownload = await scoredDownloadReady;
+  const scoredReport = await readFile(await scoredDownload.path(), "utf8");
+  assert.match(scoredReport, /Overall score: 78\/100/);
+  assert.match(scoredReport, /CRITICAL FINDINGS/);
+  assert.match(scoredReport, /CRITERION LEDGER/);
   await page
     .getByRole("button", {
       name: /Read Location clarification in the transcript/,

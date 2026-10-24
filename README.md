@@ -50,7 +50,7 @@ Difficulty changes caller delivery and information coherence—not injuries or i
 
 Debriefs include a scored call-handling assessment, critical findings, a criterion ledger, transcript-linked moments, a next-practice focus, personal notes, and complete text export. OpenAI proposes evidence-linked judgements; server code owns the weights and arithmetic. No model weights were trained for grading.
 
-The `call-handling-v1` prototype rubric uses incident location (20 points), location verification (10), immediate exposure (15), people at risk (10), incident picture (15), focused follow-up (10), simulated reconnect plan (10), factual confirmation (5), and closure/expectations (5). Met earns full credit, partial earns half, and a demonstrated missed opportunity earns zero. Unassessable criteria are excluded, not failed. Fabricated references and unsupported judgements cannot contribute points; critical location/exposure findings remain visible separately from the total.
+The `call-handling-v1` prototype rubric uses incident location (20 points), location verification (10), immediate exposure (15), people at risk (10), incident picture (15), focused follow-up (10), simulated reconnect plan (10), factual confirmation (5), and closure/expectations (5). Met earns full credit, partial earns half, and a demonstrated missed opportunity earns zero. Unassessable criteria are excluded, not failed. Full credit for acquiring location, exposure, affected-person, or incident information requires both trainee and heard-caller evidence. Fabricated references and unsupported judgements cannot contribute points; critical location/exposure findings remain visible separately from the total.
 
 An overall score needs at least three recorded trainee turns and 60% assessable weighted coverage. It is earned points divided by assessable points, normalized to 100; incomplete coverage remains provisional. The report shows the denominator, coverage, exact evidence, and project-defined method. It does not measure voice quality, response speed, clinical competence, or dispatch-system performance. Scripted samples and legacy sessions are not retroactively graded.
 
@@ -78,9 +78,17 @@ An optional live check spends API credit. With the server running and both keys 
 node --env-file=.env tests/live-smoke.mjs --live
 ```
 
-This also requires Chrome and `ffmpeg`. It generates a synthetic spoken question, feeds it through Chrome's fake microphone, and uses real OpenAI and Fish requests for a complete call and debrief. It checks transcription, caller audio decoding/playback, transcript-linked feedback, and microphone release. The `--live` flag is mandatory; this script never runs as part of the regular test commands. Its summary, screenshot, and fictional caller audio are saved under ignored `artifacts/`; temporary microphone files are removed.
+This also requires Chrome and `ffmpeg`. It generates a synthetic spoken question, feeds it through Chrome's fake microphone, and follows it with three typed questions using real OpenAI and Fish requests. It checks transcription, five completed caller playbacks, transcript-linked feedback, rubric arithmetic/evidence, and microphone release. Add `--intense` to select optional intense difficulty while staying in random mode; without it the call is unscoped. The `--live` flag is mandatory; this script never runs as part of the regular test commands. Its summary, screenshot, and fictional caller audio are saved under ignored `artifacts/`; temporary microphone files are removed.
 
 The live check passed on 24 October 2026 for one unscoped English call: the question was transcribed exactly, two caller turns played, and the debrief cited the trainee's actual turn. This is a short integration check with synthetic speech, not a human listening test or a validation of training effectiveness. See [WORKLOG.md](WORKLOG.md) for measured timings and remaining limits.
+
+An expanded intense-call check also passed with one microphone question, three typed follow-ups, and five caller playbacks. Reviewing its grading exposed overly generous location credit, so the anchors were tightened and a separate, one-request semantic regression was added:
+
+```sh
+node --env-file=.env tests/live-assessment.mjs --live
+```
+
+This needs only OpenAI credentials and spends API credit. Its authored transcript tests the difference between a geographic incident location and an indoor position, a genuine reconnect opportunity versus panic alone, and location-only versus non-location confirmation. It passed after the changes; one case is not a claim of general grader accuracy. Both live scripts are excluded from regular tests.
 
 To serve the production build locally:
 
