@@ -8,7 +8,11 @@ import {
   plainDialogue,
   validateDialogue,
 } from "../server/intelligence.mjs";
-import { validateSetup, chooseScenario } from "../shared/scenarios.mjs";
+import {
+  domains,
+  validateSetup,
+  chooseScenario,
+} from "../shared/scenarios.mjs";
 
 const scenario = {
   title: "Smoke beside a market",
@@ -68,6 +72,14 @@ test("empty scope works; optional constraints remain optional and invalid values
   });
   assert.equal(chooseScenario({}, () => 0).domain, "road");
   assert.equal(chooseScenario({ domains: ["fire"] }, () => 0).domain, "fire");
+  assert.throws(
+    () => chooseScenario({ domains: ["gas"] }),
+    /scripted sample does not include/,
+  );
+  assert.equal(
+    chooseScenario({ domains: ["gas", "fire"] }, () => 0).domain,
+    "fire",
+  );
   assert.throws(() => validateSetup({ domains: ["invented"] }));
   assert.throws(() => validateSetup({ domains: "fire" }));
   assert.throws(() => validateSetup({ mode: "scheduled" }));
@@ -90,6 +102,51 @@ test("empty scope works; optional constraints remain optional and invalid values
     ],
   );
   assert.deepEqual(review.moments, [{ segmentId: "real" }]);
+});
+
+test("all incident choices share scope validation and the structured generator catalogue", async () => {
+  assert.equal(domains.length, 18);
+  assert.equal(
+    new Set(domains.map((domain) => domain.id)).size,
+    domains.length,
+  );
+  assert.deepEqual(
+    domains.slice(0, 6).map((domain) => domain.id),
+    ["road", "fire", "medical", "safety", "missing", "public"],
+  );
+  for (const domain of domains) {
+    const scope = validateSetup({ domains: [domain.id] });
+    const intelligence = createIntelligence(
+      {},
+      {
+        responses: {
+          parse: async (request) => {
+            assert.deepEqual(
+              request.text.format.schema.properties.domain.enum,
+              domains.map((item) => item.id),
+            );
+            assert.ok(
+              request.text.format.schema.properties.domain.description.includes(
+                domain.name,
+              ) ||
+                request.text.format.schema.properties.domain.description.includes(
+                  domain.description,
+                ),
+            );
+            assert.ok(request.input.includes(JSON.stringify(scope)));
+            return {
+              status: "completed",
+              output_parsed: {
+                ...structuredClone(scenario),
+                domain: domain.id,
+              },
+            };
+          },
+        },
+      },
+    );
+    assert.equal((await intelligence.generate(scope)).domain, domain.id);
+  }
 });
 
 test("OpenAI SDK receives structured, non-stored requests and rejects scope drift", async () => {

@@ -4,6 +4,8 @@ Browser-based practice for emergency call-takers. Open the app, start a random c
 
 Incident interests, difficulty, language, and guided practice are optional. With no preferences, OpenAI generates a new fictional case freely, in English. Guided mode adds a briefing and question prompts; random is the default.
 
+The incident picker shows the original six categories first. Show more reveals twelve additional types, including gas leaks, electrical hazards, flooding, domestic violence, break-ins, and mental health crises. Selected extra types stay visible when collapsed. All eighteen types are accepted by the live generator; the offline scripted sample has only its six authored cases and reports unsupported selections explicitly.
+
 ## Run locally
 
 Requires Node.js 22.12+ and npm.

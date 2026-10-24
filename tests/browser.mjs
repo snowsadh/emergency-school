@@ -207,6 +207,78 @@ try {
 
   await clickNav("Practice room");
   await page.locator(".customize-toggle").click();
+  assert.equal(
+    await page.locator(".scope-chip").count(),
+    6,
+    "The original six types stay visible by default.",
+  );
+  await page
+    .getByRole("button", { name: "Show 12 more types", exact: true })
+    .click();
+  assert.equal(await page.locator(".scope-chip").count(), 18);
+  assert.equal(
+    await page
+      .getByRole("button", { name: "Show fewer types", exact: true })
+      .getAttribute("aria-expanded"),
+    "true",
+  );
+  await noOverflow();
+  await page.screenshot({
+    path: "artifacts/incident-types-expanded-desktop.png",
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 375, height: 850 });
+  await noOverflow();
+  await page.screenshot({
+    path: "artifacts/incident-types-expanded-mobile.png",
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 1440, height: 1050 });
+  await page.getByRole("button", { name: "Gas leaks", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Domestic violence", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Show fewer types", exact: true })
+    .click();
+  assert.equal(
+    await page.locator(".scope-chip").count(),
+    8,
+    "Selected extra types must not disappear when collapsed.",
+  );
+  assert.equal(
+    await page
+      .getByRole("button", { name: "Gas leaks", exact: true })
+      .getAttribute("aria-pressed"),
+    "true",
+  );
+  await page.getByRole("button", { name: "Start call", exact: true }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Explore a text-only sample" })
+    .click();
+  await page
+    .getByRole("alert")
+    .getByText(/scripted sample does not include these incident types/)
+    .waitFor();
+  assert.equal(
+    await page.locator(".call-page").count(),
+    0,
+    "An unsupported scripted selection must not silently use another incident.",
+  );
+  await page.reload();
+  await page.locator(".customize-toggle").click();
+  assert.equal(await page.locator(".scope-chip").count(), 8);
+  for (const name of ["Gas leaks", "Domestic violence"]) {
+    const selected = page.getByRole("button", { name, exact: true });
+    assert.equal(
+      await selected.getAttribute("aria-pressed"),
+      "true",
+      "Extra-type preferences persist across reload.",
+    );
+    await selected.click();
+  }
+  assert.equal(await page.locator(".scope-chip").count(), 6);
   await page.getByRole("button", { name: /Fire & smoke/ }).click();
   await page
     .getByRole("combobox", { name: "Optional difficulty" })

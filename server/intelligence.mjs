@@ -1,6 +1,7 @@
 import OpenAI, { toFile } from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
 import { z } from "zod";
+import { domains } from "../shared/scenarios.mjs";
 import {
   assessmentRubric,
   calculateAssessment,
@@ -15,7 +16,14 @@ const spokenDialogue = z
 const callerTurn = z.object({ dialogue: spokenDialogue, endCall: z.boolean() });
 const scenarioSchema = z.object({
   title: z.string(),
-  domain: z.enum(["road", "fire", "medical", "safety", "missing", "public"]),
+  domain: z
+    .enum(domains.map((domain) => domain.id))
+    .describe(
+      "Choose one permitted incident type. " +
+        domains
+          .map((domain) => `${domain.id}: ${domain.description || domain.name}`)
+          .join("; "),
+    ),
   brief: z.string(),
   language: z.enum(["en", "hi"]),
   difficulty: z.enum(["steady", "challenging", "intense"]),

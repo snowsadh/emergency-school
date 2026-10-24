@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -23,6 +24,14 @@ export default function PracticeRoom({
   latest,
   onHistory,
 }) {
+  const [showAllTypes, setShowAllTypes] = useState(false);
+  const visibleDomains = domains.filter(
+    (domain, index) =>
+      index < 6 || showAllTypes || scope.domains.includes(domain.id),
+  );
+  const hiddenTypeCount = domains
+    .slice(6)
+    .filter((domain) => !scope.domains.includes(domain.id)).length;
   const count =
     scope.domains.length +
     Number(Boolean(scope.difficulty)) +
@@ -151,22 +160,23 @@ export default function PracticeRoom({
               </div>
               <button
                 className="text-button"
-                onClick={() =>
+                onClick={() => {
                   setScope({
                     mode: "random",
                     domains: [],
                     difficulty: "",
                     language: "",
-                  })
-                }
+                  });
+                  setShowAllTypes(false);
+                }}
               >
                 Reset
               </button>
             </div>
             <fieldset>
               <legend className="field-label">Incident types</legend>
-              <div className="scope-chips">
-                {domains.map((domain) => (
+              <div className="scope-chips" id="incident-type-options">
+                {visibleDomains.map((domain) => (
                   <button
                     key={domain.id}
                     className={`scope-chip ${scope.domains.includes(domain.id) ? "selected" : ""}`}
@@ -182,6 +192,19 @@ export default function PracticeRoom({
                   </button>
                 ))}
               </div>
+              {(showAllTypes || hiddenTypeCount > 0) && (
+                <button
+                  className="text-button incident-types-toggle"
+                  aria-expanded={showAllTypes}
+                  aria-controls="incident-type-options"
+                  onClick={() => setShowAllTypes(!showAllTypes)}
+                >
+                  {showAllTypes
+                    ? "Show fewer types"
+                    : `Show ${hiddenTypeCount} more types`}
+                  <ChevronDown size={14} />
+                </button>
+              )}
             </fieldset>
             <div className="scope-selects">
               <label>

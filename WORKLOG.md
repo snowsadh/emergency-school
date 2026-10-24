@@ -30,6 +30,16 @@ Last updated: 24 October 2026.
 
 ## Work completed / decisions changed
 
+### More incident types with progressive disclosure — complete
+
+Founder requested additional incident types behind an expander and clarified that the current six are the right default amount. Preserve their order and appearance; add twelve choices behind Show more. Keep selected extra types visible when collapsed, preserve selections across reload, and keep all customization optional. Reuse the current neutral palette, Onest typography, and wrapping chips; use a small disclosure control rather than a new picker or mandatory setup.
+
+Implementation plan: extend the shared incident catalogue and derive the generator's allowed values from it, so choices work in live calls and appear consistently in reviews/history/activity. Make unsupported scripted-sample selections fail clearly rather than return an unrelated case or crash. Check schema compatibility with official OpenAI Structured Outputs docs, add backend/browser coverage for all types and expand/collapse/persistence, inspect desktop/mobile expanded layouts, then restart the server to load the catalogue. No paid provider calls are needed.
+
+Implemented eighteen optional types: the original six remain the default, with gas leaks, electrical hazards, flooding, severe weather, water incidents, trapped people, domestic violence, break-ins/intruders, assault/threats, mental health crises, workplace incidents, and animal incidents behind Show more. The shared catalogue now defines the picker, validation, generator schema, and existing report/history/activity labels. Extra selections stay visible on collapse and survive reload; Reset clears them and collapses the list. The generator receives category descriptions through the schema, without changing models, SDK, voice settings, or scoring. The offline sample still has six authored cases; unsupported selections now explain that limit instead of crashing.
+
+Verification: **36/36 tests**, `npm run test:browser`, `npm run build`, and diff checks passed. New checks cover all eighteen schema/scope values, original default order/count, expand/collapse, selected-extra visibility, persisted selection, unsupported sample handling, and responsive layouts. Expanded desktop and 375px mobile screenshots inspected. Restarted the local server; a deliberately invalid call type confirmed that new incident preferences pass validation before rejecting the request without any provider work. No paid API requests were made; realistic model output for every new type has not been individually evaluated.
+
 ### First-visit homepage context — complete
 
 Founder feedback: the homepage does not explain the product quickly enough, but slogans and fragmented AI-style copy are not acceptable. The audience is emergency call-taker trainees; the page's job is to explain the operator/caller roles and the resulting assessment without adding onboarding.

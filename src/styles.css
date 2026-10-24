@@ -597,6 +597,15 @@ textarea::placeholder {
   background: #efebe7;
   border-color: #d6ccc3;
 }
+.incident-types-toggle {
+  margin-top: 9px;
+}
+.incident-types-toggle > svg {
+  transition: transform 140ms;
+}
+.incident-types-toggle[aria-expanded="true"] > svg {
+  transform: rotate(180deg);
+}
 .scope-selects {
   display: grid;
   grid-template-columns: 1fr 1fr;

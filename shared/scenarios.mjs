@@ -6,6 +6,78 @@ export const domains = [
   { id: "safety", name: "Personal safety", icon: "shield" },
   { id: "missing", name: "Missing persons", icon: "search" },
   { id: "public", name: "Public disturbance", icon: "megaphone" },
+  {
+    id: "gas",
+    name: "Gas leaks",
+    description:
+      "A reported gas smell or suspected leak; establish observations without asking the caller to investigate.",
+  },
+  {
+    id: "electrical",
+    name: "Electrical hazards",
+    description:
+      "Exposed wiring, a fallen power line, or another electrical hazard affecting people nearby.",
+  },
+  {
+    id: "flood",
+    name: "Flooding",
+    description:
+      "Rising water, flooded streets or buildings, or people cut off by floodwater.",
+  },
+  {
+    id: "weather",
+    name: "Severe weather",
+    description:
+      "Storm damage, fallen trees, or immediate danger caused by severe weather.",
+  },
+  {
+    id: "water",
+    name: "Water incidents",
+    description:
+      "Someone in difficulty in a river, pool, lake, or other body of water; no rescue instructions.",
+  },
+  {
+    id: "trapped",
+    name: "Trapped people",
+    description:
+      "Someone stuck in a lift, locked space, damaged structure, or other confined location.",
+  },
+  {
+    id: "domestic",
+    name: "Domestic violence",
+    description:
+      "A non-graphic report of violence, intimidation, or immediate danger within a household; handle the caller sensitively.",
+  },
+  {
+    id: "intruder",
+    name: "Break-ins & intruders",
+    description:
+      "A suspected break-in, intruder, or attempted entry; distinguish observations from assumptions.",
+  },
+  {
+    id: "assault",
+    name: "Assault & threats",
+    description:
+      "A non-graphic report of an assault or immediate threat to someone's safety.",
+  },
+  {
+    id: "mental_health",
+    name: "Mental health crisis",
+    description:
+      "Acute emotional distress or concern for someone's immediate safety; use non-judgmental language and no self-harm methods.",
+  },
+  {
+    id: "workplace",
+    name: "Workplace incidents",
+    description:
+      "An accident or safety hazard at a workplace, construction site, or industrial premises.",
+  },
+  {
+    id: "animal",
+    name: "Animal incidents",
+    description:
+      "An animal placing people at risk, such as a loose aggressive dog or an animal on a busy road.",
+  },
 ];
 
 export const difficulties = [
@@ -279,6 +351,10 @@ export function chooseScenario(setup, random = Math.random) {
   const pool = scenarios.filter(
     (s) => !valid.domains.length || valid.domains.includes(s.domain),
   );
+  if (!pool.length)
+    throw new Error(
+      "The scripted sample does not include these incident types yet. Clear incident preferences to try a sample, or use live calling.",
+    );
   return pool[Math.min(pool.length - 1, Math.floor(random() * pool.length))];
 }
 
