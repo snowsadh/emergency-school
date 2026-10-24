@@ -11,7 +11,7 @@ Last updated: 24 October 2026.
 - OpenAI generates immutable incident facts, caller personality, the opening, and subsequent replies. Replies include Fish performance directions such as `[anxious, hesitant]`.
 - Fish Drama 3 speaks the generated replies. OpenAI transcribes the trainee's recorded turns.
 - Ending a call opens a transcript-backed debrief. No fabricated grades, validated-readiness claims, or frozen scoring weights.
-- Clean, intentionally designed interface: restrained lavender/ink palette, clear typography, generous space. No dashboard clutter or ornamental score widgets.
+- Visual reference: Fish Audio, with its clutter removed. Use Onest typography, warm-neutral surfaces, near-black controls, and straightforward product copy. The earlier lavender/waveform design was rejected by the founder and is being replaced.
 
 ## Implementation plan and progress
 
@@ -28,6 +28,20 @@ Last updated: 24 October 2026.
 - [x] Update setup instructions and reconcile earlier research with the final scope.
 
 ## Work completed / decisions changed
+
+### UI revision — Fish Audio reference (in progress)
+
+The founder rejected the first UI's pulse branding, marketing slogans, and generic voice-AI styling. Inspected the actual Fish Audio public site and app in Chrome, including computed typography: Onest, warm neutral backgrounds, compact navigation, white tool surfaces, and near-black pill buttons. Reference screenshots are kept in ignored `artifacts/`, not committed as product assets.
+
+Plan:
+
+- [x] Inspect the actual reference, rather than infer its design from memory.
+- [ ] Replace pulse branding and promotional copy with a typographic identity and literal training controls.
+- [ ] Rebuild the practice screen around a compact session surface and one Start call action; keep customization optional.
+- [ ] Apply the same neutral design to calls, debriefs, history, and activity.
+- [ ] Review desktop/mobile screenshots and rerun behavior/audio checks before checkpoint commits.
+
+No voice-provider or conversation logic changes are intended in this revision.
 
 ### Initial scaffold
 
