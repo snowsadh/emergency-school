@@ -6,15 +6,15 @@ No signup, phone number, or onboarding questionnaire. Open the practice room and
 
 [Inside a call](#inside-a-call) · [The review](#after-the-call) · [Run locally](#run-locally) · [Developer guide](docs/development.md)
 
-![The Emergency School call room, with voice controls and a transcript of the operator asking the caller for their location.](docs/images/call-room.png)
-
-<sub>Call room preview with a synthetic test conversation. Live calls use OpenAI and Fish Audio.</sub>
-
 ## Inside a call
 
 - **An incident you haven't seen.** Random calls are the main experience. Each live session gets new incident facts and a caller personality; you discover the situation through your questions.
 - **A caller with their own delivery.** Panic, hesitation, and scattered answers change the conversational challenge. OpenAI writes emotion and pacing directions; Fish Audio's Drama 3 speaks them. The underlying incident facts stay consistent.
 - **Practice on your terms.** Start without choosing anything, or narrow the next call by incident type, difficulty, or language. There are 18 incident types, English and Hindi, and an optional guided mode with a briefing and question prompts.
+
+![The Emergency School call room, with voice controls and a transcript of the operator asking the caller for their location.](docs/images/call-room.png)
+
+<sub>Call room preview with a synthetic test conversation. Live calls use OpenAI and Fish Audio.</sub>
 
 ## After the call
 
