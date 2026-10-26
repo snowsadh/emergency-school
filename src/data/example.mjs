@@ -118,7 +118,7 @@ export const exampleSession = {
   review: {
     headline: "Location clarified. Exposure left uncertain.",
     overview:
-      "The call-taker clarified a city and landmark and checked the rider’s observable condition. A general safety question did not resolve the caller’s uncertainty about traffic exposure. The call then closed without addressing an explicit concern about losing contact. The total and these omissions need to be read together.",
+      "The call operator clarified a city and landmark and checked the rider’s observable condition. A general safety question did not resolve the caller’s uncertainty about traffic exposure. The call then closed without addressing an explicit concern about losing contact. The total and these omissions need to be read together.",
     moments: [
       {
         kind: "strength",

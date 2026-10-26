@@ -55,7 +55,7 @@ export default function PracticeRoom({
     <div className="practice-page">
       <header className="practice-intro">
         <h1>
-          Emergency <span>call-taker</span> training
+          Emergency <span>call operator</span> training
         </h1>
         <p>
           You act as the 112 operator. An AI caller describes an emergency and

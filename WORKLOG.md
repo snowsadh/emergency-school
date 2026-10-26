@@ -30,6 +30,16 @@ Last updated: 26 October 2026.
 
 ## Work completed / decisions changed
 
+### README product presentation — complete
+
+Founder wants the clearer README to also make the project look compelling. Use the frontend-design skill for presentation and Ponytail for a small, dependency-free implementation: keep GitHub-native Markdown, show genuine product screens, and retain the short setup instructions. The subject is browser voice practice for trainee emergency call operators; the README's job is to make the caller experience and evidence-backed review tangible without implying validated training outcomes.
+
+Design plan: reuse the app's warm background `#fbfaf9`, white `#ffffff`, ink `#1d1d1c`, muted `#77716c`, and border `#e8e5e2`. Product screenshots carry Onest display/body type and IBM Plex Mono utility labels; README prose uses GitHub's native typography. The signature is a real call-room view followed by the authored assessment, including its critical findings rather than a decorative perfect score. Keep sample provenance explicit, avoid generic badges, fake statistics, and marketing slogans. Match the founder's operator terminology in the homepage, authored report, and page description before recapturing them. Leave research history and original source titles intact.
+
+Implemented a more concrete opening, compact section navigation, and two genuine interface previews: the voice call room and the authored report's score, coverage, critical finding, and conversation evidence. The screenshots are stored in `docs/images/` (212,390 bytes combined); existing browser checks now capture their source images in ignored `artifacts/`. Captions distinguish the synthetic test conversation and authored example from live trainee results. Kept local setup and limitations visible. Updated the homepage, authored overview, and page description to emergency call operator; no conversation logic, scoring method, provider settings, or storage behavior changed.
+
+Verification: **36/36 tests**, both browser suites, the production build, and diff checks passed. Browser calls used mocked providers with other API routes blocked; no paid requests were made. Inspected the two source screenshots and a local GitHub-style Markdown preview at 1120px and 390px; both images load and neither layout overflows horizontally. This preview approximates GitHub styling rather than being a live GitHub render. Checked all 23 documentation links/anchors, balanced code fences, operator terminology, and PNG dimensions/combined size. No new dependency was added.
+
 ### README cleanup — complete
 
 Founder requested a cleaner, more pleasant README and clarified the product term: emergency call operator. Rewrote the README around the project introduction, practice flow, and local setup, reducing it from 120 to 60 lines. Moved detailed configuration, call mechanics, scoring, privacy, and test instructions to `docs/development.md`. Historical results remain in this log rather than being repeated in the project introduction. The rewritten documents use emergency call operator; historical notes and application copy were not rewritten. No application behavior, model configuration, or scoring rules changed.

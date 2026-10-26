@@ -106,7 +106,7 @@ try {
   );
   assert.match(
     await page.locator("h1").textContent(),
-    /Emergency call-taker training/,
+    /Emergency call operator training/,
   );
   assert.match(
     await page.locator(".practice-intro").textContent(),
@@ -161,6 +161,8 @@ try {
     await page.locator(".report-example-notice").textContent(),
     /Authored example/,
   );
+  await page.evaluate(() => document.fonts.ready);
+  await page.screenshot({ path: "artifacts/readme-review.png" });
   await clickNav("Practice room");
 
   await startSample();

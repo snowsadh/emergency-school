@@ -1,18 +1,28 @@
 # Emergency School
 
-Voice practice for people training to answer 112 emergency calls. You act as the emergency call operator; an AI caller describes a fictional incident and responds to your questions. After the call, review what you established, what you missed, and the conversation behind each assessment.
+Emergency School is a voice training room for 112 emergency call operators. An AI plays someone calling for help; you work out what happened, where they are, and what they can tell you. When you end the call, the review takes you back to your decisions—with the actual conversation as evidence.
 
 No signup, phone number, or onboarding questionnaire. Open the practice room and start a call.
 
-## The practice experience
+[Inside a call](#inside-a-call) · [The review](#after-the-call) · [Run locally](#run-locally) · [Developer guide](docs/development.md)
 
-1. **Meet an unknown caller.** Each live call has a newly generated incident, caller personality, and emotional delivery. You discover the situation through conversation, not a briefing.
-2. **Work through the incident.** Ask questions, establish the location, and clarify immediate risks. The caller responds using the same underlying incident facts throughout the call.
-3. **Review your decisions.** The report includes scored call-handling checks, critical findings, and quotes linked to the transcript. Keep notes, revisit earlier sessions, or export the review.
+![The Emergency School call room, with voice controls and a transcript of the operator asking the caller for their location.](docs/images/call-room.png)
 
-Random calls are the main mode. If you want a narrower exercise, optionally choose from 18 incident types, adjust the difficulty, or select English or Hindi. Guided practice adds a briefing and question prompts. None of these choices is required.
+<sub>Call room preview with a synthetic test conversation. Live calls use OpenAI and Fish Audio.</sub>
 
-OpenAI generates the scenario and dialogue, transcribes your speech, and proposes assessment findings. Fish Audio's Drama 3 turns the caller's dialogue and emotion directions into speech. The app uses React, Vite, and a Node.js server.
+## Inside a call
+
+- **An incident you haven't seen.** Random calls are the main experience. Each live session gets new incident facts and a caller personality; you discover the situation through your questions.
+- **A caller with their own delivery.** Panic, hesitation, and scattered answers change the conversational challenge. OpenAI writes emotion and pacing directions; Fish Audio's Drama 3 speaks them. The underlying incident facts stay consistent.
+- **Practice on your terms.** Start without choosing anything, or narrow the next call by incident type, difficulty, or language. There are 18 incident types, English and Hindi, and an optional guided mode with a briefing and question prompts.
+
+## After the call
+
+The review shows what you established and where you left important details unresolved. Scored checks sit alongside critical findings, so an overall number doesn't hide an unanswered safety question. Each finding links back to the transcript; you can inspect the evidence, keep reflection notes, export the report, and revisit sessions in your journal.
+
+![An example call review showing a score, assessment coverage, an unresolved safety concern, quoted conversation evidence, and a next-practice suggestion.](docs/images/call-review.png)
+
+<sub>Authored example report. The content and score illustrate the format, not a measured trainee result.</sub>
 
 ## Run locally
 
@@ -40,12 +50,14 @@ Without keys, you can explore a labelled, scripted text sample. It does not use 
 
 ## Development
 
+Built with React, Vite, and a Node.js server. OpenAI handles the scenario, conversation, transcription, and proposed assessment findings; application code owns the scoring weights and arithmetic.
+
 ```sh
 npm test          # Unit and backend checks; no paid requests
 npm run build    # Production build
 ```
 
-See the [developer guide](docs/development.md) for model and voice settings, browser tests, opt-in paid checks, the scoring method, data handling, and local production setup.
+The [developer guide](docs/development.md) covers model and voice settings, browser tests, opt-in paid checks, scoring, data handling, and local production setup.
 
 ## Current limits
 
@@ -53,8 +65,6 @@ This is a training prototype, not a real 112 connection or a validated professio
 
 Use fictional information only. Voice turns go to OpenAI for transcription; caller dialogue goes to Fish for speech. Completed sessions stay in this browser, and provider retention policies still apply. The server is intended for local use, not public deployment as-is.
 
-## Project notes
+---
 
-- [Build log](WORKLOG.md) — decisions, checkpoints, verification, and remaining work.
-- [Research](research.md) — source material and earlier proposals, with superseded scope marked.
-- [Hackathon brief](hack.md) — event research and demo context.
+[Build log](WORKLOG.md) · [Research and earlier proposals](research.md) · [Hackathon brief](hack.md)

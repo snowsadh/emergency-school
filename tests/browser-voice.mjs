@@ -245,6 +245,11 @@ try {
     .click();
   await page.getByText(reply.text, { exact: true }).waitFor();
   await page.getByText("Listening to you", { exact: true }).waitFor();
+  await page.evaluate(() => document.fonts.ready);
+  await page.screenshot({
+    path: "artifacts/readme-call.png",
+    fullPage: true,
+  });
   await page.getByRole("button", { name: "Send voice", exact: true }).click();
   await page.getByText(safetyReply.text, { exact: true }).waitFor();
   await page.getByText("Listening to you", { exact: true }).waitFor();
