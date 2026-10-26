@@ -1,6 +1,6 @@
 # Emergency School — build log
 
-Last updated: 24 October 2026.
+Last updated: 26 October 2026.
 
 ## Current product contract
 
@@ -29,6 +29,12 @@ Last updated: 24 October 2026.
 - [x] Load local credentials and verify a complete call against the real providers with a synthetic microphone.
 
 ## Work completed / decisions changed
+
+### README cleanup — complete
+
+Founder requested a cleaner, more pleasant README and clarified the product term: emergency call operator. Rewrote the README around the project introduction, practice flow, and local setup, reducing it from 120 to 60 lines. Moved detailed configuration, call mechanics, scoring, privacy, and test instructions to `docs/development.md`. Historical results remain in this log rather than being repeated in the project introduction. The rewritten documents use emergency call operator; historical notes and application copy were not rewritten. No application behavior, model configuration, or scoring rules changed.
+
+Verification: all 11 relative Markdown links resolve; code fences are balanced; documented npm scripts exist; all nine scoring labels and weights match the implementation. Compared configuration defaults and test requirements with the source. `npm test` passed **36/36**, `npm run build` passed, and diff checks passed. Browser and live-provider checks were not rerun for this documentation-only change. No paid requests were made.
 
 ### More incident types with progressive disclosure — complete
 
