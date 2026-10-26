@@ -30,6 +30,14 @@ Last updated: 26 October 2026.
 
 ## Work completed / decisions changed
 
+### Compact README images and footer removal — complete
+
+Founder requested removal of the Build log / Research / Hackathon footer row and smaller README images, then clarified that the images must stay centred. Removed that row and its divider, retained the underlying documents, and set both previews to 600px display width using native image attributes. Centred each image and its caption with a GitHub-compatible paragraph alignment attribute. Preserved alt text, sample-provenance captions, and original PNGs; no asset regeneration or application changes were needed. Ponytail kept this to the README and progress log without additional dependencies.
+
+Verification: both image targets load, images and captions remain present, and the footer links are absent. A local Chromium rendering with GitHub-style responsive image sizing confirms both images are centred at 1100px and 390px viewport widths: 600px and 358px display widths respectively, unchanged aspect ratios, and no horizontal overflow. Diff checks passed. Application/browser regression suites and paid provider checks were not rerun for this documentation-only change; no provider requests were made.
+
+Push follow-up: GitHub contained a newer README edit moving the call-room image below its description. Rebased the unpublished documentation checkpoint onto that commit, preserving the remote placement and applying the smaller, centred styling there; no remote history was overwritten.
+
 ### README product presentation — complete
 
 Founder wants the clearer README to also make the project look compelling. Use the frontend-design skill for presentation and Ponytail for a small, dependency-free implementation: keep GitHub-native Markdown, show genuine product screens, and retain the short setup instructions. The subject is browser voice practice for trainee emergency call operators; the README's job is to make the caller experience and evidence-backed review tangible without implying validated training outcomes.

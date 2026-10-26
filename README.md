@@ -12,17 +12,21 @@ No signup, phone number, or onboarding questionnaire. Open the practice room and
 - **A caller with their own delivery.** Panic, hesitation, and scattered answers change the conversational challenge. OpenAI writes emotion and pacing directions; Fish Audio's Drama 3 speaks them. The underlying incident facts stay consistent.
 - **Practice on your terms.** Start without choosing anything, or narrow the next call by incident type, difficulty, or language. There are 18 incident types, English and Hindi, and an optional guided mode with a briefing and question prompts.
 
-![The Emergency School call room, with voice controls and a transcript of the operator asking the caller for their location.](docs/images/call-room.png)
-
-<sub>Call room preview with a synthetic test conversation. Live calls use OpenAI and Fish Audio.</sub>
+<p align="center">
+  <img src="docs/images/call-room.png" width="600" alt="The Emergency School call room, with voice controls and a transcript of the operator asking the caller for their location.">
+  <br>
+  <sub>Call room preview with a synthetic test conversation. Live calls use OpenAI and Fish Audio.</sub>
+</p>
 
 ## After the call
 
 The review shows what you established and where you left important details unresolved. Scored checks sit alongside critical findings, so an overall number doesn't hide an unanswered safety question. Each finding links back to the transcript; you can inspect the evidence, keep reflection notes, export the report, and revisit sessions in your journal.
 
-![An example call review showing a score, assessment coverage, an unresolved safety concern, quoted conversation evidence, and a next-practice suggestion.](docs/images/call-review.png)
-
-<sub>Authored example report. The content and score illustrate the format, not a measured trainee result.</sub>
+<p align="center">
+  <img src="docs/images/call-review.png" width="600" alt="An example call review showing a score, assessment coverage, an unresolved safety concern, quoted conversation evidence, and a next-practice suggestion.">
+  <br>
+  <sub>Authored example report. The content and score illustrate the format, not a measured trainee result.</sub>
+</p>
 
 ## Run locally
 
@@ -64,7 +68,3 @@ The [developer guide](docs/development.md) covers model and voice settings, brow
 This is a training prototype, not a real 112 connection or a validated professional assessment. Scores use project-defined criteria informed by public training material; they do not certify readiness. The microphone pauses while the caller speaks, so interruptions are not supported yet. Hindi is selectable but still needs listening tests.
 
 Use fictional information only. Voice turns go to OpenAI for transcription; caller dialogue goes to Fish for speech. Completed sessions stay in this browser, and provider retention policies still apply. The server is intended for local use, not public deployment as-is.
-
----
-
-[Build log](WORKLOG.md) · [Research and earlier proposals](research.md) · [Hackathon brief](hack.md)
